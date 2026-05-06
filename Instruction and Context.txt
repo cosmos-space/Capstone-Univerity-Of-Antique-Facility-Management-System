@@ -1,0 +1,63 @@
+University of antique facility and equipment management system
+tech stack
+Xamp: any OS, apache/apache2,  MySQL, PHP
+frameworks: Laravel, VueJS
+
+Context: a system of GSU in UA that helps them to manage facility and equipment usage for colleges to book. The flow follows:
+(GSU holds most of the facilities other then the colleges avr and holds non college owned equipments)
+1.) College A --(sends form request)--> GSU(recieves)
+2.) GSU (check if a. booking other colleges avr/equipments or b. only borrowing the university facilities and equipments, c. if in some way equiments cant be covered by GSU, allow for GSU to book equipments themselves to other colleges) 
+
+--(a)--> GSU checks availability (if available accept, if not attempt reschedule, by some means the GSU can't then finally deny).
+--(b)--> GSU Checks availability, if there is data (if available accept, if not attempt reschedule, by some means the GSU can't, then finally deny), if no data --(forwards request to College B)--> College B (can confirm/deny/reschedule availability of their avr or equipment) --(response forwards to GSU)--> GSU (verifies) --(GSU final verdict forward to College A).
+--(c)--> GSU checks  if possible but needs to book the rest of the equipment from other colleges --(send request to college B)--> College B denies/accepts on
+
+3.) 
+
+
+2 Systems
+facility management system
+4 modules
+1.) admin module (highest level):
+> admin dashboard (monthly statistics)
+> admin notification manager > request verifications(accept/deny/rescheduled)
+> admin college contact system
+> admin live view of facility usage - 
+> account registration and full account control
+
+2.) per college office entities module (college staff)
+> login portal
+> facility usage request form (set date of usage should be two weeks prior, else denied)
+> staff notification (request verified from one of the admins (1/3 states)) || staff approval of their college resources (this sets the admin what to do on other colleges request)
+> staff request manager (forms drafts/pending requests/accepted or denied requests/cancelled requests)
+
+3.) organization accounts module
+> login portal
+> facility usage request form (set date of usage should be two weeks prior, else denied)
+> staff notification
+> staff request manager (forms drafts/pending requests/accepted or denied requests/cancelled requests)
+
+4.) user module (view only)
+> facility usage calendar
+> events tracker
+
+equipment management system
+
+DB
+- Entities
+Accounts per college, accounts for university org and gsu admins
+
+Requester account (no contact Num)
+Head of office account
+GSU person in-charge
+
+- Date Time
+Requested date, approved date and the duration
+
+- Locations
+All college AVR, Busalian Hall, Paghiusa Hall, Ehub, Balay ni Juan, Grandstand, Covered Gym, Others
+
+- Equipment
+Monobloc chair, Electric fan, table, rostrum,flag and school color, speaker and mic and led wall and number of borrowed equipment
+
+
