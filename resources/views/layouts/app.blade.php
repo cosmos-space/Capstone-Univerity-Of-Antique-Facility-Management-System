@@ -13,26 +13,25 @@
                 UA Facility Management
             </a>
             <nav class="space-x-4">
-                @if(auth()->check())
+                @auth
                     <span class="text-sm text-gray-600">
-                        Role: {{ optional(auth()->user())->role ?? 'user' }}
+                        Role: {{ auth()->user()->role ?? 'user' }}
                     </span>
 
-                    {{-- Simple role labels, no extra links needed for now --}}
-                    @php($role = optional(auth()->user())->role)
+                    @php($role = auth()->user()->role)
                     @if ($role === 'admin')
-                        <span class="text-sm text-blue-600">Admin Area</span>
+                        <a href="{{ route('admin.dashboard') }}" class="text-sm text-blue-600">Dashboard</a>
                     @elseif ($role === 'college_staff')
-                        <span class="text-sm text-blue-600">College Staff Area</span>
+                        <a href="{{ route('college.dashboard') }}" class="text-sm text-blue-600">Dashboard</a>
                     @elseif ($role === 'org_staff')
-                        <span class="text-sm text-blue-600">Org Staff Area</span>
+                        <a href="{{ route('org.dashboard') }}" class="text-sm text-blue-600">Dashboard</a>
                     @endif
 
                     <form class="inline" method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="text-sm text-red-600">Logout</button>
                     </form>
-                @endif
+                @endauth
             </nav>
         </div>
     </header>
@@ -54,7 +53,7 @@
 
     <footer class="bg-white border-t">
         <div class="max-w-6xl mx-auto px-4 py-4 text-xs text-gray-500">
-            University of Antique • GSU Facility & Equipment Management System
+            University of Antique &bull; GSU Facility & Equipment Management System
         </div>
     </footer>
 </div>
