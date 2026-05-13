@@ -24,6 +24,24 @@ class AuthController extends Controller
             $request->session()->regenerate();
             
             $user = Auth::user();
+            $requiredRole = session('required_role');
+            
+            // Validate role if one is required
+            if ($requiredRole && $user->role !== $requiredRole) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                
+                // Clear the required role from session
+                session()->forget('required_role');
+                
+                return back()->withErrors([
+                    'email' => 'Access denied. Invalid credentials.',
+                ]);
+            }
+            
+            // Clear the required role from session after successful validation
+            session()->forget('required_role');
             
             // Redirect based on role
             if ($user->role === 'admin') {
@@ -38,7 +56,7 @@ class AuthController extends Controller
         }
 
         return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
+            'email' => 'Access denied. Invalid credentials.',
         ]);
     }
 

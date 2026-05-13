@@ -13,19 +13,26 @@
                 UA Facility Management
             </a>
             <nav class="space-x-4">
-                @auth
+                @if(auth()->check())
                     <span class="text-sm text-gray-600">
-                        Role: {{ auth()->user()->role ?? 'user' }}
+                        Role: {{ optional(auth()->user())->role ?? 'user' }}
                     </span>
-                    <a href="{{ route('dashboard') }}" class="text-sm text-blue-600">Dashboard</a>
+
+                    {{-- Simple role labels, no extra links needed for now --}}
+                    @php($role = optional(auth()->user())->role)
+                    @if ($role === 'admin')
+                        <span class="text-sm text-blue-600">Admin Area</span>
+                    @elseif ($role === 'college_staff')
+                        <span class="text-sm text-blue-600">College Staff Area</span>
+                    @elseif ($role === 'org_staff')
+                        <span class="text-sm text-blue-600">Org Staff Area</span>
+                    @endif
+
                     <form class="inline" method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="text-sm text-red-600">Logout</button>
                     </form>
-                @else
-                    <a href="{{ route('login') }}" class="text-sm text-blue-600">Login</a>
-                    <a href="{{ route('register') }}" class="text-sm text-blue-600">Register</a>
-                @endauth
+                @endif
             </nav>
         </div>
     </header>
