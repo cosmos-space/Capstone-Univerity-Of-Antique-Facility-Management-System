@@ -53,3 +53,4 @@ class MaintenanceTicket extends Model
         return $this->hasMany(MaintenanceLog::class);
     }
 }
+ 

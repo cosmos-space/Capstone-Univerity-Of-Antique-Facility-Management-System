@@ -1,7 +1,8 @@
 @echo off
 setlocal
 
-echo Building UA Facility Management System Launchers...
+echo Building UA Facility Management System Launchers (PyInstaller + pywebview^)...
+echo NOTE: For fewer Windows crashes, prefer Electron: run build_launchers_electron.bat
 echo.
 
 REM Ensure we start from the script's directory
@@ -25,6 +26,17 @@ if errorlevel 1 (
     python -m pip install pyinstaller
     if errorlevel 1 (
         echo [ERROR] Failed to install PyInstaller.
+        goto :end
+    )
+)
+
+REM Check that pywebview is available
+python -c "import webview" >nul 2>&1
+if errorlevel 1 (
+    echo [INFO] pywebview not found. Installing...
+    python -m pip install pywebview
+    if errorlevel 1 (
+        echo [ERROR] Failed to install pywebview.
         goto :end
     )
 )

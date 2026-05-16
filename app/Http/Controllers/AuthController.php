@@ -62,9 +62,28 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        // Capture role before logout so we know where to send them back
+        $role = optional(Auth::user())->role;
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('home');
+
+        // Build the portal-entry URL with the same access_token and role
+        $accessToken = env('FMS_ACCESS_TOKEN', 'UA-FMS-ACCESS-2025');
+
+        // Fall back to generic login if for some reason role is missing/unknown
+        if (!in_array($role, ['admin', 'college_staff', 'org_staff'], true)) {
+            return redirect()->route('login');
+        }
+
+        // This will pass through login.access middleware again
+        $url = route('login', [
+            'access_token' => $accessToken,
+            'role' => $role,
+        ]);
+
+        return redirect($url);
     }
 }
+ 

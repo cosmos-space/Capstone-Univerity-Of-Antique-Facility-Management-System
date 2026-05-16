@@ -7,7 +7,8 @@ import os
 SECRET = os.getenv('FMS_LAUNCHER_SECRET', 'UA-FMS-2025')
 LOGIN_BASE_URL = os.getenv('FMS_LOGIN_URL', 'http://127.0.0.1:8000/fms-portal-entry')
 ACCESS_TOKEN = os.getenv('FMS_ACCESS_TOKEN', 'UA-FMS-ACCESS-2025')
-LOGIN_URL = f"{LOGIN_BASE_URL}?access_token={ACCESS_TOKEN}"
+ROLE = os.getenv('FMS_LAUNCHER_ROLE', 'admin')
+LOGIN_URL = f"{LOGIN_BASE_URL}?access_token={ACCESS_TOKEN}&role={ROLE}"
 
 def main():
     print("University of Antique - Facility Management System")
@@ -30,3 +31,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+ 

@@ -69,3 +69,4 @@ class User extends Authenticatable
         return $this->hasMany(MaintenanceLog::class, 'staff_id');
     }
 }
+ 

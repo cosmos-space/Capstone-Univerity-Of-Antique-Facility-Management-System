@@ -40,3 +40,4 @@ class LoginAccessMiddleware
         return $next($request);
     }
 }
+ 

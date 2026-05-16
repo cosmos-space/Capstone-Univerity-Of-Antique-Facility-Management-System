@@ -60,4 +60,47 @@ All college AVR, Busalian Hall, Paghiusa Hall, Ehub, Balay ni Juan, Grandstand, 
 - Equipment
 Monobloc chair, Electric fan, table, rostrum,flag and school color, speaker and mic and led wall and number of borrowed equipment
 
+----------------------------------------------------
 
+Requests should be following the flow 
+Concurrency should available 
+All pillars of IA must be properly implemented through available resources/libraries (application layer obviously)
+
+--Forms--
+No null values 
+Forms must have a facility and equipments stated no null
+Allow buttons instead of manual typed inputs
+
+College Staff can book facilities and be verified by the gsu though given wity security the colleges staff name is included as a requester with his/her name will be hashed, and turn it into a qr code
+
+Orgs can do the same and will have the same security and non repudiation measures 
+
+Admins can book facilities by themselves with reasons if theyre paid with external entities or the university president requires so. Even tho this system uses first in first served, these two are exceptions
+
+
+!!Make sure the db is properly hooked to the app!!
+
+--Dashboards--
+Admins have;
+User Management - register (add a new college staff, org, or gsu admin), edit user and remove (not delete just revoke authority)
+
+Requests Management - see all college staff, orgs and them themselves admin requests 
+
+Sort them through pending (unconfirmed requests, relayed requests like college A books college B AVR or reassigned requests cuz admin has the power, they can change that if needed no abuse though its trusted that they'll handle when conflicts do happen), approved, disapproved and cancelled (either by the admin themselves or the requester).
+
+Printable forms and statistics 
+
+Allow to print the request forms and these statistics 
+Monthly statistics - use bar charts with the amount of requests under each facilities,
+Pie chart for the colleges, orgs or external entities with the percent and number of requests they made up for that month and a bar chart version 
+(Idk how to do this pls excuse me)
+Table of colleges, orgs and external entities 
+track of approved, disapproved and cancelled requests and is separated through months, can be looked by categories 
+
+Availability viewer and changer 
+
+Allows to view facility current state available/unavailable/maintenance (rare but may happen)
+
+Non avr facilities are automatically handled by admins thus they set availability by themselves (of course availability modified once theres a request approved, cancelled or under maintenance)
+
+College Staff

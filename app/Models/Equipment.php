@@ -21,3 +21,4 @@ class Equipment extends Model
         'is_active' => 'boolean',
     ];
 }
+ 
