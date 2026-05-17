@@ -48,13 +48,15 @@ $env:FMS_ADMIN_SECRET = "UA-ADMIN-2025"
 
 ### Test users
 
-After `php artisan db:seed`:
+`php artisan db:seed` only adds `test@example.com` (no role) and facilities. For portal login, create role users via helper routes while Laravel is running:
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@ua.edu.ph | password |
-| College staff | college@ua.edu.ph | password |
-| Org staff | org@ua.edu.ph | password |
+| Role | Create account (open in browser) | Email | Password |
+|------|----------------------------------|-------|----------|
+| Admin | http://127.0.0.1:8000/make-admin | admin@example.com | password123 |
+| College staff | http://127.0.0.1:8000/make-college-staff | college@example.com | password123 |
+| Org staff | http://127.0.0.1:8000/make-org-staff | org@example.com | password123 |
+
+See `TEST_ACCOUNTS.md` for how seeding and `/make-*` routes differ.
 
 ## Environment variables
 
@@ -152,3 +154,4 @@ Configure `FMS_LOGIN_URL`, `FMS_ACCESS_TOKEN`, and `FMS_ORG_SECRET` in `app/buil
 - `QUICKSTART.md` — local setup in under 10 minutes
 - `.env.example` — all `FMS_*` settings
 - `android/ua-fms-org/README.md` — org APK build steps
+- `TEST_ACCOUNTS.md` — test user creation (seeder vs helper routes)

@@ -72,25 +72,40 @@ Launchers are now running. Each will open a login window.
 
 ## Step 3: Create Test Users
 
-### 3.1 Run Database Seeder
+See **`TEST_ACCOUNTS.md`** for full detail. Short version:
+
+### 3.1 Run database seeder (facilities + generic user only)
+
 ```bash
 php artisan db:seed
 ```
 
-This creates default users for testing:
+This seeds the facility list and one generic user (`test@example.com` / `password`, **no role**). It does **not** create admin, college, or org portal accounts.
+
+### 3.2 Create role accounts via helper routes
+
+With Laravel running (`php artisan serve`), open each URL once in a browser:
+
+| Role | URL |
+|------|-----|
+| Admin | http://127.0.0.1:8000/make-admin |
+| College staff | http://127.0.0.1:8000/make-college-staff |
+| Org staff | http://127.0.0.1:8000/make-org-staff |
+
+### 3.3 Portal login credentials
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@ua.edu.ph | password |
-| College Staff | college@ua.edu.ph | password |
-| Org Staff | org@ua.edu.ph | password |
+| Admin | admin@example.com | password123 |
+| College staff | college@example.com | password123 |
+| Org staff | org@example.com | password123 |
 
-### 3.2 Test the Login Flow
+### 3.4 Test the login flow
 
-1. Launcher opens - Enter access key (e.g., UA-ADMIN-2025)
-2. WebView loads - Shows Laravel login page
-3. Enter credentials - Use the test user credentials above
-4. Redirected to dashboard - You're in
+1. Launcher opens — enter access key (e.g. `UA-ADMIN-2025`)
+2. WebView loads — Laravel login page
+3. Enter credentials from the table above
+4. Redirected to the role dashboard
 
 ## Step 4: Build Standalone .exe Files (Optional)
 
@@ -103,7 +118,7 @@ pip install pyinstaller
 
 ### 4.2 Build All Launchers
 ```bash
-build_launchers.bat
+dump\build_launchers.bat
 ```
 
 Or build individually:
@@ -123,9 +138,9 @@ Find your .exe files in the dist/ folder.
 3. Make changes - Refresh WebView or restart launcher
 
 ### Testing Different Roles:
-- Admin: Use admin launcher + admin@ua.edu.ph credentials
-- College Staff: Use college launcher + college@ua.edu.ph credentials
-- Org Staff: Use org launcher + org@ua.edu.ph credentials
+- Admin: admin launcher + `admin@example.com` / `password123`
+- College staff: college launcher + `college@example.com` / `password123`
+- Org staff: org launcher + `org@example.com` / `password123`
 
 ## Troubleshooting
 
@@ -187,10 +202,11 @@ They'll now connect to your machine instead of localhost.
 
 Once you're comfortable with the basics:
 
-1. Read DEPLOYMENT_GUIDE.md - For production deployment
-2. Customize tokens - Change default secrets in .env
-3. Build production launchers - With your own branding
-4. Set up Android app - For mobile access
+1. Read `DEPLOYMENT_GUIDE.md` — production deployment
+2. Read `TEST_ACCOUNTS.md` — seeder vs `/make-*` user setup
+3. Customize tokens — change default secrets in `.env`
+4. Build production launchers — PyInstaller with production env vars
+5. Android org app — `android/ua-fms-org/README.md`
 
 ## Quick Reference
 
@@ -205,15 +221,19 @@ Once you're comfortable with the basics:
 # Laravel
 php artisan serve              # Start development server
 php artisan migrate            # Run database migrations
-php artisan db:seed            # Create test users
+php artisan db:seed            # Facilities + generic test@example.com user
+# Then visit /make-admin, /make-college-staff, /make-org-staff (see TEST_ACCOUNTS.md)
 php artisan tinker             # Interactive PHP console
 
 # Launchers
 python launchers/admin_launcher.py      # Run admin portal
 python launchers/college_launcher.py    # Run college portal
 python launchers/org_launcher.py        # Run org portal
-build_launchers.bat                     # Build all .exe files
+dump\build_launchers.bat                # Build all .exe files
 ```
+
+### Important docs:
+- `TEST_ACCOUNTS.md` — how seeder vs `/make-*` routes create users
 
 ---
 

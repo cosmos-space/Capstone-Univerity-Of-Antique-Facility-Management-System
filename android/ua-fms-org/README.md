@@ -91,3 +91,4 @@ Admin and college launchers stay desktop-only unless you duplicate this app with
 
 - `LAUNCHER_README.md` — desktop org launcher
 - `DEPLOYMENT_GUIDE.md` — production tokens and Laravel deploy
+- `TEST_ACCOUNTS.md` — create `org@example.com` via `/make-org-staff` before testing login

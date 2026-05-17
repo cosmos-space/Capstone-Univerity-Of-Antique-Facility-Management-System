@@ -226,7 +226,7 @@ php artisan tinker
 
 - [ ] Copy `.env.example` to `.env`
 - [ ] `php artisan key:generate`
-- [ ] `php artisan migrate` and optional `php artisan db:seed`
+- [ ] `php artisan migrate` and optional `php artisan db:seed` (facilities only; see `TEST_ACCOUNTS.md` for dev users)
 - [ ] `php artisan serve`
 - [ ] Run `python launchers/admin_launcher.py` (and other roles as needed)
 
@@ -250,3 +250,4 @@ php artisan tinker
 - `QUICKSTART.md` — local development in minutes
 - `.env.example` — variable reference
 - `dump/build_launchers.bat` — PyInstaller build helper
+- `TEST_ACCOUNTS.md` — development test users (seeder vs `/make-*` routes)
