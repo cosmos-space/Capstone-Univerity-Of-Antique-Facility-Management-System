@@ -2,11 +2,10 @@
 setlocal
 
 echo Building UA Facility Management System Launchers (PyInstaller + pywebview^)...
-echo NOTE: For fewer Windows crashes, prefer Electron: run build_launchers_electron.bat
 echo.
 
-REM Ensure we start from the script's directory
-cd /d "%~dp0"
+REM Repository root (parent of dump/)
+cd /d "%~dp0\.."
 
 REM Go into launchers folder
 cd launchers

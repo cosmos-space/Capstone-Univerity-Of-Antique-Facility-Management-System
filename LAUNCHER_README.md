@@ -1,132 +1,154 @@
-# UA Facility Management System - Windows Launcher
+# UA Facility Management System — Desktop Launchers
 
-## 🎯 Purpose
-This Windows launcher provides secure access to the hidden login portal for authorized staff only.
+## Purpose
 
-## 🔧 How It Works
-1. Prompts for a secret access key
-2. Validates the key locally
-3. Opens the hidden login URL in default browser
-4. Only authorized personnel with the launcher and key can access
+Desktop launchers give authorized staff a controlled way to reach the hidden portal login (`/fms-portal-entry`). Each role has its own launcher:
 
-## 📦 Building the Executable
+| Launcher | Source file | Role query param | Access key env var | Default key |
+|----------|-------------|------------------|--------------------|-------------|
+| Admin | `launchers/admin_launcher.py` | `admin` | `FMS_ADMIN_SECRET` | `UA-ADMIN-2025` |
+| College staff | `launchers/college_launcher.py` | `college_staff` | `FMS_COLLEGE_SECRET` | `UA-COLLEGE-2025` |
+| Organization staff | `launchers/org_launcher.py` | `org_staff` | `FMS_ORG_SECRET` | `UA-ORG-2025` |
 
-### Prerequisites
-- Python installed on your development machine
-- Command line/terminal access
+Launchers use **pywebview** (embedded window, not the system browser).
 
-### Build Steps
+## How it works
 
-1. **Install PyInstaller** (one-time setup):
+1. A small local gate window asks for the role-specific access key.
+2. The key is checked against the launcher secret (from environment variables at build/run time).
+3. On success, a second window opens the Laravel portal URL:
+   `{FMS_LOGIN_URL}?access_token={FMS_ACCESS_TOKEN}&role={ROLE}`
+4. The user signs in with normal Laravel credentials; role middleware enforces the correct dashboard.
+
+Laravel must expose the same `FMS_ACCESS_TOKEN` and `FMS_LOGIN_URL` in `.env` (see `.env.example`).
+
+## Prerequisites
+
+- Python 3.8+
+- Laravel backend running (default: `http://127.0.0.1:8000`)
+- Dependencies: `pip install pywebview` (optional on Windows: `cefpython3` for the CEF backend used by the launchers)
+
+## Development (run from source)
+
+From the repository root, with Laravel serving on port 8000:
+
 ```bash
-pip install pyinstaller
+python launchers/admin_launcher.py
+python launchers/college_launcher.py
+python launchers/org_launcher.py
 ```
 
-2. **Build the executable**:
+Optional overrides (PowerShell):
+
+```powershell
+$env:FMS_LOGIN_URL = "http://127.0.0.1:8000/fms-portal-entry"
+$env:FMS_ACCESS_TOKEN = "UA-FMS-ACCESS-2025"
+$env:FMS_ADMIN_SECRET = "UA-ADMIN-2025"
+```
+
+### Test users
+
+After `php artisan db:seed`:
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@ua.edu.ph | password |
+| College staff | college@ua.edu.ph | password |
+| Org staff | org@ua.edu.ph | password |
+
+## Environment variables
+
+| Variable | Used by | Purpose |
+|----------|---------|---------|
+| `FMS_LOGIN_URL` | Laravel + all launchers | Base portal entry URL (no query string) |
+| `FMS_ACCESS_TOKEN` | Laravel + all launchers | Token in `?access_token=` |
+| `FMS_ADMIN_SECRET` | Admin launcher | Gate key |
+| `FMS_COLLEGE_SECRET` | College launcher | Gate key |
+| `FMS_ORG_SECRET` | Org launcher | Gate key |
+| `FMS_LAUNCHER_SECRET` | Legacy/fallback | Not used by current role launchers |
+
+Values must match `.env` on the server. Change defaults before production.
+
+## Building portable executables (PyInstaller)
+
+Set production values in the shell **before** building so they are baked into the `.exe`:
+
+```powershell
+$env:FMS_LOGIN_URL = "https://your-domain.edu.ph/fms-portal-entry"
+$env:FMS_ACCESS_TOKEN = "your-production-access-token"
+$env:FMS_ADMIN_SECRET = "your-admin-secret"
+$env:FMS_COLLEGE_SECRET = "your-college-secret"
+$env:FMS_ORG_SECRET = "your-org-secret"
+```
+
+From the `launchers` directory:
+
 ```bash
-cd "C:\Users\user\Desktop\Dumps\Capstone Univerity Of Antique Facility Management System"
-pyinstaller --onefile launcher.py
+cd launchers
+pip install pyinstaller pywebview
+python -m PyInstaller --onefile --name "UA-FMS-Admin-Portal" admin_launcher.py
+python -m PyInstaller --onefile --name "UA-FMS-College-Portal" college_launcher.py
+python -m PyInstaller --onefile --name "UA-FMS-Org-Portal" org_launcher.py
 ```
 
-3. **Find the executable**:
-- Look in: `dist/launcher.exe`
-- This is the file you distribute to staff/admins
+Output: `launchers/dist/UA-FMS-*-Portal.exe`
 
-## 🚀 Using the Launcher
+Helper script (from repo root): `dump\build_launchers.bat`
 
-### For Staff/Admins
-1. Double-click `launcher.exe`
-2. Enter the access key when prompted
-3. Browser opens with login page
-4. Login with your credentials
+## Distribution checklist
 
-### Current Access Key
-```
-UA-FMS-2025
-```
+When giving launchers to staff:
 
-### Login Credentials (for testing)
-- **Email**: admin@example.com
-- **Password**: password123
+- [ ] Distribute only the `.exe` for their role (Admin / College / Org).
+- [ ] Share the matching access key out of band (not in email with the binary).
+- [ ] Confirm production `FMS_LOGIN_URL` and tokens were set at build time (or document how to set env vars if you distribute scripts instead of `.exe`).
+- [ ] Provide Laravel login instructions (university accounts, not launcher keys).
+- [ ] Point support staff to `QUICKSTART.md` and `DEPLOYMENT_GUIDE.md`.
 
-## 🔒 Security Features
+## Security notes
 
-### Hidden Login URL
-- **URL**: `/fms-portal-entry`
-- **Not linked anywhere** in the public interface
-- **Only accessible** through launcher or direct URL knowledge
+- Portal route `/fms-portal-entry` is not linked from the public site.
+- Launcher key + URL token + Laravel login form three layers; RBAC is enforced server-side.
+- Use HTTPS in production for `FMS_LOGIN_URL`.
+- Rotate `FMS_ACCESS_TOKEN` and role secrets periodically; rebuild and redistribute launchers after rotation.
 
-### Dual Authentication
-1. **Access Key**: Validates user can reach login
-2. **User Credentials**: Standard Laravel authentication
-3. **Role-Based Access**: Middleware enforces dashboard permissions
+## Troubleshooting
 
-## 🌐 URLs
+**Launcher cannot reach the server**
 
-### Development Environment
-- **Public**: `http://127.0.0.1:8000/`
-- **Login**: `http://127.0.0.1:8000/fms-portal-entry`
+- Confirm `php artisan serve` (or production web server) is up.
+- Match `FMS_LOGIN_URL` and `FMS_ACCESS_TOKEN` in Laravel `.env` and in the launcher build environment.
 
-### Production (when deployed)
-- Update `LOGIN_URL` in `launcher.py` before building:
-```python
-LOGIN_URL = "https://fms.uaniversity.edu/fms-portal-entry"
-```
+**Invalid key at gate**
 
-## 🎛️ Customization
+- Use the secret for that role (`FMS_ADMIN_SECRET`, etc.), not `FMS_ACCESS_TOKEN`.
 
-### Change Access Key
-Edit `SECRET` in `launcher.py`:
-```python
-SECRET = "YOUR_NEW_SECRET_KEY"
+**pywebview / WebView errors on Windows**
+
+- Install `cefpython3` so the launcher can use the CEF backend (`webview.start(gui='cef')`).
+- If CEF is unavailable, the launcher falls back to the default GUI (Edge/WebView2).
+- Reinstall pywebview: `pip uninstall pywebview && pip install pywebview`
+
+**Check variables (PowerShell)**
+
+```powershell
+$env:FMS_LOGIN_URL
+$env:FMS_ACCESS_TOKEN
+$env:FMS_ADMIN_SECRET
 ```
 
-### Role-Specific Launchers (optional)
-Create separate launchers for different roles:
-```python
-# Admin launcher
-LOGIN_URL = "http://127.0.0.1:8000/fms-portal-entry"
-SECRET = "UA-FMS-ADMIN-2025"
+## Android (organization staff only)
 
-# College staff launcher  
-LOGIN_URL = "http://127.0.0.1:8000/fms-portal-entry"
-SECRET = "UA-FMS-COLLEGE-2025"
+`org_launcher.py` does not build to APK on Windows. Use the native org app:
 
-# Org staff launcher
-LOGIN_URL = "http://127.0.0.1:8000/fms-portal-entry"
-SECRET = "UA-FMS-ORG-2025"
-```
+- Source: `android/ua-fms-org/`
+- Guide: `android/ua-fms-org/README.md`
 
-## 📋 Distribution Checklist
+Configure `FMS_LOGIN_URL`, `FMS_ACCESS_TOKEN`, and `FMS_ORG_SECRET` in `app/build.gradle.kts`, then build APK in Android Studio.
 
-When distributing to staff:
-- [ ] Provide `launcher.exe` file
-- [ ] Share the current access key
-- [ ] Include login credentials for testing
-- [ ] Explain the dual authentication process
-- [ ] Provide support contact information
+## Related documentation
 
-## 🛡️ Additional Security (Future Enhancements)
-
-### Optional Hardening
-- **HTTPS**: Use SSL certificates in production
-- **Network Access**: Restrict to campus network via firewall
-- **Token Validation**: Add query parameter validation
-- **Logging**: Track access attempts
-
-### Example Token Enhancement
-```python
-LOGIN_URL = "http://127.0.0.1:8000/fms-portal-entry?access_token=PRE_SHARED_TOKEN"
-```
-
-## 📞 Support
-
-If staff encounter issues:
-1. Verify they have the correct access key
-2. Check if Laravel server is running
-3. Confirm browser can access the URL
-4. Contact system administrator for assistance
-
----
-
-**Note**: This launcher adds convenience and an extra security layer, but the primary security remains Laravel's authentication and role-based access control.
+- `DEPLOYMENT_GUIDE.md` — production Laravel and token setup
+- `QUICKSTART.md` — local setup in under 10 minutes
+- `.env.example` — all `FMS_*` settings
+- `android/ua-fms-org/README.md` — org APK build steps

@@ -1,8 +1,6 @@
 """
 UA Facility Management System - Organization Staff Portal Launcher
 Uses pywebview for lightweight embedded browser.
-
-Prefer launchers/electron on Windows (Chromium via Electron) — fewer native WebView2 crashes.
 """
 
 import os

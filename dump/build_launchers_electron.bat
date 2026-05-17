@@ -1,6 +1,6 @@
 @echo off
 setlocal
-cd /d "%~dp0"
+cd /d "%~dp0\.."
 
 echo UA FMS — Electron launchers (replaces pywebview on Windows)
 echo.

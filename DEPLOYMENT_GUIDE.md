@@ -1,37 +1,38 @@
-# UA Facility Management System - Deployment Guide
+# UA Facility Management System — Deployment Guide
 
 ## Overview
-This system uses environment variables for easy deployment configuration. **No code changes needed** when moving between environments!
 
-The platform consists of:
-- **Laravel Backend** - Main web application
-- **Desktop Launchers** - pywebview apps for Admin, College Staff, and Organization Staff
-- **Mobile WebView Apps** - Android apps pointing to the same backend
+Configuration is driven by environment variables. You can move between development, LAN, and production without changing application code—only `.env`, launcher build-time variables, and redeployed binaries.
 
-## Environment Variables
+The platform includes:
 
-### Security Configuration
+- **Laravel backend** — web application, hidden portal entry, and dashboards
+- **Desktop launchers** — Admin, College Staff, and Organization Staff (pywebview + PyInstaller)
+- **Optional mobile WebView clients** — if you ship them separately, use the same `FMS_LOGIN_URL` and `FMS_ACCESS_TOKEN` as Laravel
+
+## Environment variables
+
+### Security and portal access
+
 ```env
-# Access token for login portal (URL parameter)
+# URL parameter required to open /fms-portal-entry (all clients)
 FMS_ACCESS_TOKEN=UA-FMS-ACCESS-2025
 
-# Secret key for launcher authentication (general)
+# Legacy general launcher secret (current role launchers use the role-specific keys below)
 FMS_LAUNCHER_SECRET=UA-FMS-2025
 
-# Role-specific access keys (for desktop launchers)
+# Gate keys for desktop launchers (one per role)
 FMS_ADMIN_SECRET=UA-ADMIN-2025
 FMS_COLLEGE_SECRET=UA-COLLEGE-2025
 FMS_ORG_SECRET=UA-ORG-2025
 
-# Base URL for login portal
+# Base URL for portal entry (no query string)
 FMS_LOGIN_URL=http://127.0.0.1:8000/fms-portal-entry
 ```
 
-### Environment-Specific Setup
+### Development (`.env`)
 
-#### Development (.env)
 ```env
-# Keep these in sync with your local setup
 FMS_ACCESS_TOKEN=UA-FMS-ACCESS-2025
 FMS_LAUNCHER_SECRET=UA-FMS-2025
 FMS_ADMIN_SECRET=UA-ADMIN-2025
@@ -40,250 +41,212 @@ FMS_ORG_SECRET=UA-ORG-2025
 FMS_LOGIN_URL=http://127.0.0.1:8000/fms-portal-entry
 ```
 
-#### Production (.env)
+### Production (`.env`)
+
 ```env
-# IMPORTANT: Change all tokens for production!
-FMS_ACCESS_TOKEN=PROD-ACCESS-2025-CHANGE-ME
-FMS_LAUNCHER_SECRET=PROD-LAUNCHER-2025-CHANGE-ME
-FMS_ADMIN_SECRET=PROD-ADMIN-2025-CHANGE-ME
-FMS_COLLEGE_SECRET=PROD-COLLEGE-2025-CHANGE-ME
-FMS_ORG_SECRET=PROD-ORG-2025-CHANGE-ME
-FMS_LOGIN_URL=https://fms.ua.edu.ph/fms-portal-entry
+FMS_ACCESS_TOKEN=PROD-ACCESS-CHANGE-ME
+FMS_LAUNCHER_SECRET=PROD-LAUNCHER-CHANGE-ME
+FMS_ADMIN_SECRET=PROD-ADMIN-CHANGE-ME
+FMS_COLLEGE_SECRET=PROD-COLLEGE-CHANGE-ME
+FMS_ORG_SECRET=PROD-ORG-CHANGE-ME
+FMS_LOGIN_URL=https://your-domain.edu.ph/fms-portal-entry
+APP_URL=https://your-domain.edu.ph
+APP_DEBUG=false
 ```
 
-## Deployment Steps
+See `dump/env-production.example` for a fuller production template (database, mail, etc.).
 
-### 1. Environment Setup
+## Deployment steps
+
+### 1. Environment setup
+
 ```bash
-# Copy environment template
-cp .env.example .env
-
-# Generate application key
+copy .env.example .env
+composer install
 php artisan key:generate
-
-# Edit .env with your values
-nano .env
 ```
 
-### 2. Update Security Values
-**IMPORTANT**: Change these for production!
-- `FMS_ACCESS_TOKEN` - URL access token (used by all apps)
-- `FMS_LAUNCHER_SECRET` - General launcher authentication key
-- `FMS_ADMIN_SECRET` - Admin portal access key
-- `FMS_COLLEGE_SECRET` - College staff portal access key
-- `FMS_ORG_SECRET` - Organization staff portal access key
-- `FMS_LOGIN_URL` - Production domain
+Edit `.env` with database, `APP_URL`, and all `FMS_*` values.
 
-### 3. Build Desktop Launchers for Production
+### 2. Update security values for production
 
-Each launcher is built separately for its role:
+Change every default token and secret. Keep these aligned:
 
-```bash
-# Set production environment variables
-set FMS_ACCESS_TOKEN=PROD-ACCESS-2025-CHANGE-ME
-set FMS_LOGIN_URL=https://fms.ua.edu.ph/fms-portal-entry
-set FMS_ADMIN_SECRET=PROD-ADMIN-2025-CHANGE-ME
-set FMS_COLLEGE_SECRET=PROD-COLLEGE-2025-CHANGE-ME
-set FMS_ORG_SECRET=PROD-ORG-2025-CHANGE-ME
+| Variable | Purpose |
+|----------|---------|
+| `FMS_ACCESS_TOKEN` | Required on portal URL; validated by Laravel middleware |
+| `FMS_LOGIN_URL` | Base URL used by launchers and any mobile clients |
+| `FMS_ADMIN_SECRET` | Admin launcher gate key |
+| `FMS_COLLEGE_SECRET` | College launcher gate key |
+| `FMS_ORG_SECRET` | Organization launcher gate key |
 
-# Build admin launcher
-pyinstaller --onefile --name "UA-FMS-Admin-Portal" launchers/admin_launcher.py
+### 3. Build desktop launchers
 
-# Build college launcher
-pyinstaller --onefile --name "UA-FMS-College-Portal" launchers/college_launcher.py
+Set variables in the shell **before** building so packaged `.exe` files embed the production endpoints and secrets.
 
-# Build org launcher
-pyinstaller --onefile --name "UA-FMS-Org-Portal" launchers/org_launcher.py
+**PowerShell (example):**
 
-# Or use the batch file
-build_launchers.bat
+```powershell
+$env:FMS_ACCESS_TOKEN = "PROD-ACCESS-CHANGE-ME"
+$env:FMS_LOGIN_URL = "https://your-domain.edu.ph/fms-portal-entry"
+$env:FMS_ADMIN_SECRET = "PROD-ADMIN-CHANGE-ME"
+$env:FMS_COLLEGE_SECRET = "PROD-COLLEGE-CHANGE-ME"
+$env:FMS_ORG_SECRET = "PROD-ORG-CHANGE-ME"
 ```
 
-### 4. Laravel Deployment
+**PyInstaller (from `launchers/`):**
+
 ```bash
-# Install dependencies
+cd launchers
+python -m PyInstaller --onefile --name "UA-FMS-Admin-Portal" admin_launcher.py
+python -m PyInstaller --onefile --name "UA-FMS-College-Portal" college_launcher.py
+python -m PyInstaller --onefile --name "UA-FMS-Org-Portal" org_launcher.py
+```
+
+Artifacts: `launchers/dist/UA-FMS-*-Portal.exe`
+
+**Helper script:** `dump\build_launchers.bat` (run from repository root)
+
+See `LAUNCHER_README.md` for role mapping and troubleshooting.
+
+### 4. Laravel deployment
+
+```bash
 composer install --no-dev --optimize-autoloader
-
-# Clear caches
+php artisan migrate --force
 php artisan config:clear
 php artisan cache:clear
 php artisan view:clear
-
-# Run migrations
-php artisan migrate --force
-
-# Optimize for production
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 ```
 
-## Changing Configuration (No Code Changes!)
+Configure your web server (Apache/Nginx) to point at `public/` and terminate TLS.
 
-### To Update Login URL
+## Changing configuration without code changes
+
+### Update login URL
+
 ```env
-# Just change this in .env
-FMS_LOGIN_URL=https://new-domain.com/fms-portal-entry
+FMS_LOGIN_URL=https://new-domain.edu.ph/fms-portal-entry
 ```
 
-### To Update Security Tokens
-```env
-# Change these values
-FMS_ACCESS_TOKEN=NEW-ACCESS-TOKEN
-FMS_LAUNCHER_SECRET=NEW-SECRET-KEY
-FMS_ADMIN_SECRET=NEW-ADMIN-KEY
-FMS_COLLEGE_SECRET=NEW-COLLEGE-KEY
-FMS_ORG_SECRET=NEW-ORG-KEY
+Update `APP_URL` to match. Rebuild launchers (or redeploy with new environment variables).
+
+### Rotate tokens
+
+1. Update all `FMS_*` secrets in production `.env`.
+2. Rebuild launchers with the new values.
+3. Distribute new `.exe` files; older builds keep old baked-in values.
+4. Clear Laravel config cache: `php artisan config:clear && php artisan config:cache`
+
+### Mobile / external WebView clients
+
+If you maintain a separate Android or iOS wrapper, point it at:
+
+```
+{FMS_LOGIN_URL}?access_token={FMS_ACCESS_TOKEN}&role=org_staff
 ```
 
-### To Update Desktop Launchers
-After changing tokens in `.env`:
+Use `admin` or `college_staff` for other roles. Rebuild the mobile app when URL or token changes.
 
-1. **Rebuild all launchers** with new environment variables:
+## Security best practices
+
+1. Replace all default tokens before go-live.
+2. Use HTTPS for `APP_URL` and `FMS_LOGIN_URL`.
+3. Distribute each role’s launcher only to authorized staff.
+4. Rotate secrets on a schedule (e.g. quarterly); rebuild launchers after rotation.
+5. Prefer long random strings (32+ characters) for `FMS_ACCESS_TOKEN`.
+
+## Multi-environment support
+
+### Development (local machine)
+
 ```bash
-# Set new environment variables
-set FMS_ACCESS_TOKEN=NEW-ACCESS-TOKEN
-set FMS_LOGIN_URL=https://new-domain.com/fms-portal-entry
-set FMS_ADMIN_SECRET=NEW-ADMIN-KEY
-set FMS_COLLEGE_SECRET=NEW-COLLEGE-KEY
-set FMS_ORG_SECRET=NEW-ORG-KEY
-
-# Rebuild launchers
-build_launchers.bat
-```
-
-2. **Distribute new .exe files** to authorized staff
-
-3. **For Android apps** - Rebuild APK with new URL/token
-
-##  Security Best Practices
-
-### Production Security
-1. **Change all tokens** from defaults
-2. **Use HTTPS** for production URLs
-3. **Restrict launcher distribution** to authorized staff
-4. **Regularly rotate tokens** (quarterly recommended)
-5. **Use strong random tokens** - at least 32 characters
-
-### Token Rotation Process
-```bash
-# 1. Update .env with new tokens
-FMS_ACCESS_TOKEN=NEW-TOKEN-2025-Q2
-FMS_LAUNCHER_SECRET=NEW-SECRET-2025-Q2
-FMS_ADMIN_SECRET=NEW-ADMIN-2025-Q2
-FMS_COLLEGE_SECRET=NEW-COLLEGE-2025-Q2
-FMS_ORG_SECRET=NEW-ORG-2025-Q2
-
-# 2. Rebuild all launchers with new values
-build_launchers.bat
-
-# 3. Deploy new launchers to staff
-# 4. Old launchers become invalid
-```
-
-## Multi-Environment Support
-
-### Development (Your Laptop)
-```bash
-# Uses .env with 127.0.0.1:8000
+php artisan serve --host=127.0.0.1 --port=8000
 python launchers/admin_launcher.py
-python launchers/college_launcher.py
-python launchers/org_launcher.py
 ```
 
-### LAN Testing (e.g., 192.168.0.10:8000)
-1. Update `.env`:
+### LAN testing
+
+1. Set in `.env`:
+
 ```env
+APP_URL=http://192.168.0.10:8000
 FMS_LOGIN_URL=http://192.168.0.10:8000/fms-portal-entry
 ```
 
-2. Set environment variables on launcher machines:
+2. Serve on the LAN IP:
+
 ```bash
-set FMS_LOGIN_URL=http://192.168.0.10:8000/fms-portal-entry
-set FMS_ACCESS_TOKEN=UA-FMS-ACCESS-2025
+php artisan serve --host=192.168.0.10 --port=8000
 ```
 
-3. Run launchers (they'll use the new URL)
+3. On client PCs, set `FMS_LOGIN_URL` and `FMS_ACCESS_TOKEN` before running launchers, or rebuild launchers with those values.
 
-### Production (Real Domain)
-1. Update `.env` with production domain:
-```env
-FMS_LOGIN_URL=https://fms.ua.edu.ph/fms-portal-entry
-FMS_ACCESS_TOKEN=STRONG-RANDOM-TOKEN
-```
+### Production
 
-2. Set environment variables on each desktop machine, or rebuild launchers with production values
-
-3. For Android apps, hard-code the production URL and rebuild APK
-
-## Android App Configuration
-
-The Android org app uses a hard-coded URL. When moving to production:
-
-1. **Update the URL in MainActivity.java**:
-```java
-private static final String ORG_PORTAL_URL = 
-    "https://fms.ua.edu.ph/fms-portal-entry?access_token=YOUR_TOKEN&role=org_staff";
-```
-
-2. **Rebuild the APK** with the production URL
-
-3. **Distribute** to organization staff
+Deploy Laravel with production `.env`, build launchers with production `FMS_*` variables, test one full login per role, then distribute binaries.
 
 ## Troubleshooting
 
-### Launcher Issues
-```bash
-# Check environment variables (Windows)
-echo %FMS_ACCESS_TOKEN%
-echo %FMS_LOGIN_URL%
-echo %FMS_ADMIN_SECRET%
+### Launchers
 
-# Check environment variables (PowerShell)
+```powershell
+# PowerShell
 $env:FMS_ACCESS_TOKEN
 $env:FMS_LOGIN_URL
 $env:FMS_ADMIN_SECRET
 ```
 
-### Laravel Issues
-```bash
-# Check if environment variables are loaded
-php artisan tinker
-> env('FMS_ACCESS_TOKEN');
-> env('FMS_LOGIN_URL');
-> env('FMS_ADMIN_SECRET');
+```cmd
+REM Command Prompt
+echo %FMS_ACCESS_TOKEN%
+echo %FMS_LOGIN_URL%
 ```
 
-### Connection Issues
-- Verify the URL in `.env` matches what launchers are using
-- Check firewall settings if testing on LAN
-- Ensure Laravel is running on the correct host/port
+### Laravel
 
-## Quick Deployment Checklist
+```bash
+php artisan tinker
+>>> env('FMS_ACCESS_TOKEN');
+>>> env('FMS_LOGIN_URL');
+```
 
-### For Development
+### Connection issues
+
+- Portal URL in `.env` must match what launchers use (including `access_token` and `role` query params built by the launcher).
+- For LAN, allow the host firewall to accept port 8000 (or your production port).
+- After `.env` edits on production, refresh config cache.
+
+## Quick deployment checklist
+
+### Development
+
 - [ ] Copy `.env.example` to `.env`
-- [ ] Run `php artisan key:generate`
-- [ ] Run `php artisan migrate`
-- [ ] Start Laravel: `php artisan serve`
-- [ ] Test launchers: `python launchers/admin_launcher.py`
+- [ ] `php artisan key:generate`
+- [ ] `php artisan migrate` and optional `php artisan db:seed`
+- [ ] `php artisan serve`
+- [ ] Run `python launchers/admin_launcher.py` (and other roles as needed)
 
-### For Production
-- [ ] Update all security tokens in `.env` (CHANGE-ME values)
-- [ ] Set production URL in `FMS_LOGIN_URL`
-- [ ] Build desktop launchers with production values
-- [ ] Deploy Laravel application to server
-- [ ] Test login flow with new launcher
-- [ ] Distribute launchers to authorized staff
-- [ ] For Android: Update URL and rebuild APK
-- [ ] Document token rotation schedule
+### Production
+
+- [ ] Set strong `FMS_*` values and `APP_DEBUG=false`
+- [ ] Set `FMS_LOGIN_URL` and `APP_URL` to HTTPS production host
+- [ ] Deploy Laravel (`migrate`, config/route/view cache)
+- [ ] Build launchers (PyInstaller) with production env vars
+- [ ] Test login flow for admin, college_staff, and org_staff
+- [ ] Distribute role-specific `.exe` files to authorized users
+- [ ] Document token rotation and support contacts
 
 ---
 
-**Result**: Zero code changes needed for deployment - just update environment variables and rebuild the launchers! 🎉
+**Result:** Deploy by updating `.env`, rebuilding launchers when secrets or URLs change, and caching Laravel config—no application code edits required for environment moves.
 
-## Additional Resources
+## Additional resources
 
-- **LAUNCHER_README.md** - Detailed launcher setup instructions
-- **.env.example** - Environment variable template
-- **build_launchers.bat** - Batch script to build all launchers
+- `LAUNCHER_README.md` — launcher setup, build, and distribution
+- `QUICKSTART.md` — local development in minutes
+- `.env.example` — variable reference
+- `dump/build_launchers.bat` — PyInstaller build helper
