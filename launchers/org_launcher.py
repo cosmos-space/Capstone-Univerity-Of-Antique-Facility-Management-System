@@ -22,10 +22,18 @@ LOGIN_URL = f"{LOGIN_BASE_URL}?access_token={ACCESS_TOKEN}&role={ROLE}"
 
 
 class Api:
-    """API methods exposed to the webview."""
+    """API methods exposed to the webview.
+    
+    Clean API class with no circular references to window objects.
+    """
 
-    def __init__(self, window):
-        self.window = window
+    def __init__(self):
+        # No window reference to avoid circular references
+        self._login_window = None
+
+    def set_login_window(self, window):
+        """Set the login window reference (called after window creation)."""
+        self._login_window = window
 
     def validate_key(self, key: str) -> bool:
         """Validate the access key."""
@@ -34,10 +42,11 @@ class Api:
     def open_portal(self):
         """
         Open the main portal in a new window instead of reusing the login window.
-        Avoids pywebview/WebView2 accessibility recursion when load_url rebinds the same native window.
+        Returns success status to JavaScript caller.
         """
         print("[launcher] open_portal called with URL:", LOGIN_URL)
         try:
+            # Create new portal window
             webview.create_window(
                 title="UA Facility Management - Organization Staff Portal",
                 url=LOGIN_URL,
@@ -47,15 +56,21 @@ class Api:
                 fullscreen=False,
                 min_size=(800, 600),
             )
-            try:
-                self.window.destroy()
-            except Exception:
-                pass
+            
+            # Destroy login window if it exists
+            if self._login_window:
+                try:
+                    self._login_window.destroy()
+                except Exception as e:
+                    print(f"[launcher] Warning: Could not destroy login window: {e}")
+            
             print("[launcher] Portal window created successfully.")
+            return True
         except Exception as e:
             import traceback
             print("[launcher] Failed to open portal:", e)
             traceback.print_exc()
+            return False
 
 
 def create_login_html():
@@ -188,15 +203,23 @@ def create_login_html():
             function handleLogin() {
                 const key = document.getElementById('keyInput').value;
 
+                // pywebview 6.x exposes js_api as window.pywebview.api
                 const api = window.pywebview && window.pywebview.api;
+
                 if (!api) {
                     console.error('pywebview API not available');
                     return;
                 }
 
-                api.validate_key(key).then((isValid) => {
+                api.validate_key(key).then(async (isValid) => {
                     if (isValid) {
-                        api.open_portal();
+                        // Await the portal opening to prevent callback destruction
+                        const result = await api.open_portal();
+                        if (!result) {
+                            console.error('Failed to open portal');
+                            document.getElementById('errorMsg').style.display = 'block';
+                            document.getElementById('errorMsg').textContent = 'Failed to open portal. Please try again.';
+                        }
                     } else {
                         document.getElementById('errorMsg').style.display = 'block';
                         document.getElementById('keyInput').value = '';
@@ -221,8 +244,8 @@ def create_login_html():
 
 
 def main():
-    dummy_window = None
-    api = Api(dummy_window)
+    # Create the API first (no window reference to avoid circular references)
+    api = Api()
 
     # Local HTML key gate; portal opens in a separate window after validation
     login_window = webview.create_window(
@@ -235,9 +258,17 @@ def main():
         js_api=api,
     )
 
-    api.window = login_window
+    # Now that the window exists, set the login window reference
+    api.set_login_window(login_window)
 
-    webview.start()
+    # Start the application (only once, in main thread)
+    # Use CEF backend on Windows to avoid WebView2 threading issues
+    # Falls back to edgechromium if CEF is not available
+    try:
+        webview.start(gui='cef')
+    except Exception:
+        print("[launcher] CEF backend not available, falling back to default")
+        webview.start()
 
 
 if __name__ == "__main__":
