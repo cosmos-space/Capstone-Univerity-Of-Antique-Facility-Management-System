@@ -28,18 +28,21 @@ class GsuFormController extends Controller
             'purpose'           => 'required|string|max:500',
         ]);
 
-        // Build venue string from checkboxes - matching HTML form exactly
+        // Map checkbox names to their printable labels in the DOCX
+        // These match the seeded facilities in FacilitySeeder
         $venueLabels = [
-            'busalian_hall' => 'Busalian Hall',
-            'ict_avr'       => 'ICT AVR',
-            'grandstand'    => 'Grandstand',
-            'paghi_usa'     => 'Paghi-usa Hall',
-            'cea_avr'       => 'CEA AVR',
-            'covered_gym'   => 'Covered Gym Hub',
-            'cba_avr'       => 'CBA AVR',
-            'track_oval'    => 'Track Oval',
-            'balay_ni_juan' => 'Balay ni Juan',
-            'new_avr'       => 'New AVR',
+            'busalan_hall'   => 'BUSALAN HALL',
+            'avr_usa_hall'   => 'AVR-USA HALL',
+            'e_hub'          => 'E-HUB',
+            'balay_ni_juan'  => 'BALAY NI JUAN',
+            'ict_avr'        => 'ICT AVR',
+            'cea_avr'        => 'CEA AVR',
+            'cba_avr'        => 'CBA AVR',
+            'new_avr'        => 'NEW AVR',
+            'grand_stand'    => 'GRAND STAND',
+            'covered_gym'    => 'COVERED GYM',
+            'track_oval'     => 'TRACK OVAL',
+            // other_venue is handled via venue_others free-text field
         ];
         $selectedVenues = [];
         foreach ($venueLabels as $key => $label) {
@@ -53,23 +56,26 @@ class GsuFormController extends Controller
         );
 
         // Auto-generate control number if not provided
-        $controlNo = $request->input('control_no', $this->generateControlNumber());
+        $controlNo = $request->input('control_no', $this->generateControlNumber('facilities'));
 
         $template->setValue('control_no',        $controlNo);
-        $template->setValue('date_request',       $request->input('date_request'));
-        $template->setValue('requester_name',     $request->input('requester_name'));
-        $template->setValue('requester_contact',  $request->input('requester_contact', ''));
-        $template->setValue('date_activity',      $request->input('date_activity'));
-        $template->setValue('time_activity',      $request->input('time_activity'));
-        $template->setValue('purpose',            $request->input('purpose'));
-        $template->setValue('venues_selected',    implode(', ', $selectedVenues));
-        $template->setValue('venue_others',       $request->input('venue_others', ''));
-        $template->setValue('qty_table',          $request->input('qty_table', ''));
-        $template->setValue('qty_fan',            $request->input('qty_fan', ''));
-        $template->setValue('qty_rostrum',        $request->input('qty_rostrum', ''));
-        $template->setValue('qty_flag',           $request->input('qty_flag', ''));
-        $template->setValue('qty_sound',          $request->input('qty_sound', ''));
-        $template->setValue('qty_led',            $request->input('qty_led', ''));
+        $template->setValue('date_request',      $request->input('date_request'));
+        $template->setValue('requester_name',    $request->input('requester_name'));
+        $template->setValue('requester_contact', $request->input('requester_contact', ''));
+        $template->setValue('date_activity',     $request->input('date_activity'));
+        $template->setValue('time_activity',     $request->input('time_activity'));
+        $template->setValue('purpose',           $request->input('purpose'));
+        $template->setValue('venues_selected',   implode(', ', $selectedVenues));
+        $template->setValue('venue_others',      $request->input('venue_others', ''));
+
+        // Facilities / equipment quantities
+        $template->setValue('qty_monobloc',      $request->input('qty_monobloc', ''));
+        $template->setValue('qty_table',         $request->input('qty_table', ''));
+        $template->setValue('qty_fan',           $request->input('qty_fan', ''));
+        $template->setValue('qty_rostrum',       $request->input('qty_rostrum', ''));
+        $template->setValue('qty_flag',          $request->input('qty_flag', ''));
+        $template->setValue('qty_sound',         $request->input('qty_sound', ''));
+        $template->setValue('qty_led',           $request->input('qty_led', ''));
 
         // Signature blocks – name + datetime (signatures are left blank for manual signing)
         $template->setValue('req_signature',      '');
@@ -116,7 +122,7 @@ class GsuFormController extends Controller
         );
 
         // Auto-generate control number if not provided
-        $controlNo = $request->input('control_no', $this->generateControlNumber());
+        $controlNo = $request->input('control_no', $this->generateControlNumber('repair'));
 
         $template->setValue('control_no',           $controlNo);
         $template->setValue('date_request',          $request->input('date_request'));
@@ -182,7 +188,7 @@ class GsuFormController extends Controller
     //  HELPER: Generate Control Number
     // ─────────────────────────────────────────────
 
-    private function generateControlNumber(): string
+    private function generateControlNumber(string $formType): string
     {
         // Format: GSU-YYYYMMDD-XXXX (where XXXX is a sequential number)
         $datePart = now()->format('Ymd');
@@ -205,7 +211,7 @@ class GsuFormController extends Controller
         // Store this control number in the database
         \App\Models\FormControl::create([
             'control_number' => $newControlNo,
-            'form_type' => 'facilities', // Will be updated based on actual form type
+            'form_type' => $formType,
         ]);
 
         return $newControlNo;

@@ -21,5 +21,19 @@
                 <p class="text-sm text-orange-600">Track maintenance tickets and requests</p>
             </div>
         </div>
+
+        <div class="mt-8">
+            <h2 class="text-xl font-semibold mb-4">GSU Forms</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="{{ route('forms.facilities.show') }}" class="bg-purple-50 rounded p-4 border border-purple-200 hover:bg-purple-100 transition">
+                    <h3 class="font-semibold text-purple-800 mb-2">Facilities and Utilization Form</h3>
+                    <p class="text-sm text-purple-600">Generate PDF form for facility utilization requests</p>
+                </a>
+                <a href="{{ route('forms.repair.show') }}" class="bg-purple-50 rounded p-4 border border-purple-200 hover:bg-purple-100 transition">
+                    <h3 class="font-semibold text-purple-800 mb-2">Repair and Maintenance Form</h3>
+                    <p class="text-sm text-purple-600">Generate PDF form for repair and maintenance requests</p>
+                </a>
+            </div>
+        </div>
     </div>
 @endsection

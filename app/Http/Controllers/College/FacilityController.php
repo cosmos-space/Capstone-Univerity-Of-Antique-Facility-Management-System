@@ -49,7 +49,11 @@ class FacilityController extends Controller
 
         $validated['owner_type'] = 'college';
         $validated['owner_college'] = $collegeName;
-        $validated['availability_status'] = $validated['availability_status'] ?? 'available';
+
+        // New facilities from colleges must be verified by GSU:
+        // start as inactive and unavailable until an admin approves.
+        $validated['is_active'] = false;
+        $validated['availability_status'] = 'unavailable';
 
         Facility::create($validated);
 

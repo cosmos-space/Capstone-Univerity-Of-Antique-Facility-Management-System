@@ -3,10 +3,14 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FacilityController as AdminFacilityController;
+use App\Http\Controllers\Admin\FormSubmissionController as AdminFormSubmissionController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\College\DashboardController as CollegeDashboardController;
 use App\Http\Controllers\College\FacilityController as CollegeFacilityController;
+use App\Http\Controllers\College\FormController as CollegeFormController;
 use App\Http\Controllers\Org\DashboardController as OrgDashboardController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\GsuFormController;
 
 // Authentication routes (protected entry point)
 Route::middleware(['login.access'])->group(function () {
@@ -39,6 +43,29 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/facilities/{facility}/edit', [AdminFacilityController::class, 'edit'])->name('admin.facilities.edit');
     Route::put('/admin/facilities/{facility}', [AdminFacilityController::class, 'update'])->name('admin.facilities.update');
     Route::delete('/admin/facilities/{facility}', [AdminFacilityController::class, 'destroy'])->name('admin.facilities.destroy');
+    
+    // GSU Forms (accessible by admin/GSU staff)
+    Route::get('/forms/facilities', [GsuFormController::class, 'showFacilities'])->name('forms.facilities.show');
+    Route::post('/forms/facilities/download', [GsuFormController::class, 'downloadFacilities'])->name('forms.facilities.download');
+    Route::get('/forms/repair', [GsuFormController::class, 'showRepair'])->name('forms.repair.show');
+    Route::post('/forms/repair/download', [GsuFormController::class, 'downloadRepair'])->name('forms.repair.download');
+
+    // Facilities form submissions (GSU review)
+    Route::get('/admin/forms/facilities', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'index'])
+        ->name('admin.forms.facilities.index');
+    Route::get('/admin/forms/facilities/{submission}', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'show'])
+        ->name('admin.forms.facilities.show');
+    Route::post('/admin/forms/facilities/{submission}/approve', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'approve'])
+        ->name('admin.forms.facilities.approve');
+    Route::post('/admin/forms/facilities/{submission}/disapprove', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'disapprove'])
+        ->name('admin.forms.facilities.disapprove');
+    Route::post('/admin/forms/facilities/{submission}/set-booking', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'setBooking'])
+        ->name('admin.forms.facilities.set-booking');
+
+    // User management
+    Route::get('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.users.index');
+    Route::get('/admin/users/create', [\App\Http\Controllers\Admin\UserController::class, 'create'])->name('admin.users.create');
+    Route::post('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'store'])->name('admin.users.store');
 });
 
 // College Staff
@@ -57,6 +84,12 @@ Route::middleware(['auth', 'role:college_staff'])->group(function () {
     Route::get('/college/bookings', function() {
         return view('college.bookings.index');
     })->name('college.bookings.index');
+
+    // Facilities Utilization Form (College → GSU)
+    Route::get('/college/requests/facilities', [\App\Http\Controllers\College\FormController::class, 'createFacilities'])
+        ->name('college.requests.facilities.create');
+    Route::post('/college/requests/facilities', [\App\Http\Controllers\College\FormController::class, 'storeFacilities'])
+        ->name('college.requests.facilities.store');
 });
 
 // College Staff

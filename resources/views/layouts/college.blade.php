@@ -9,6 +9,7 @@
                 <li><a href="{{ route('college.dashboard') }}" class="text-blue-600 hover:text-blue-800">Dashboard</a></li>
                 <li><a href="{{ route('college.facilities.index') }}" class="text-blue-600 hover:text-blue-800">My Facilities</a></li>
                 <li><a href="{{ route('college.bookings.index') }}" class="text-blue-600 hover:text-blue-800">Bookings</a></li>
+                <li><a href="{{ route('college.requests.facilities.create') }}" class="text-blue-600 hover:text-blue-800">Facilities Utilization Request</a></li>
             </ul>
         </div>
         

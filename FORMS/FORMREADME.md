@@ -49,12 +49,13 @@ Route::post('/forms/repair/download', [GsuFormController::class, 'downloadRepair
 | `${purpose}` | Purpose |
 | `${venues_selected}` | Comma-separated list of selected venues |
 | `${venue_others}` | "Others – please specify" text |
-| `${qty_table}` | Quantity: Table |
-| `${qty_fan}` | Quantity: Electric Fan |
-| `${qty_rostrum}` | Quantity: Rostrum |
-| `${qty_flag}` | Quantity: Flag & School Color |
-| `${qty_sound}` | Quantity: Sound |
-| `${qty_led}` | Quantity: LED Wall |
+| `${qty_monobloc}` | Quantity: Monobloc Chair |
+| `${qty_table}`    | Quantity: Table |
+| `${qty_fan}`      | Quantity: Electric Fan |
+| `${qty_rostrum}`  | Quantity: Rostrum |
+| `${qty_flag}`     | Quantity: Flag & School Color |
+| `${qty_sound}`    | Quantity: Sound |
+| `${qty_led}`      | Quantity: LED Wall |
 | `${req_name}` | Name of Requisitioner |
 | `${req_datetime}` | Requisitioner Date and Time |
 | `${noted_name}` | Name of Head of Office |

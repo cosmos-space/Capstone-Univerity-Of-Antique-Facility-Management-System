@@ -53,20 +53,23 @@ class GsuFormController extends Controller
         );
 
         $template->setValue('control_no',        $request->input('control_no', ''));
-        $template->setValue('date_request',       $request->input('date_request'));
-        $template->setValue('requester_name',     $request->input('requester_name'));
-        $template->setValue('requester_contact',  $request->input('requester_contact'));
-        $template->setValue('date_activity',      $request->input('date_activity'));
-        $template->setValue('time_activity',      $request->input('time_activity'));
-        $template->setValue('purpose',            $request->input('purpose'));
-        $template->setValue('venues_selected',    implode(', ', $selectedVenues));
-        $template->setValue('venue_others',       $request->input('venue_others', ''));
-        $template->setValue('qty_table',          $request->input('qty_table', ''));
-        $template->setValue('qty_fan',            $request->input('qty_fan', ''));
-        $template->setValue('qty_rostrum',        $request->input('qty_rostrum', ''));
-        $template->setValue('qty_flag',           $request->input('qty_flag', ''));
-        $template->setValue('qty_sound',          $request->input('qty_sound', ''));
-        $template->setValue('qty_led',            $request->input('qty_led', ''));
+        $template->setValue('date_request',      $request->input('date_request'));
+        $template->setValue('requester_name',    $request->input('requester_name'));
+        $template->setValue('requester_contact', $request->input('requester_contact'));
+        $template->setValue('date_activity',     $request->input('date_activity'));
+        $template->setValue('time_activity',     $request->input('time_activity'));
+        $template->setValue('purpose',           $request->input('purpose'));
+        $template->setValue('venues_selected',   implode(', ', $selectedVenues));
+        $template->setValue('venue_others',      $request->input('venue_others', ''));
+
+        // Facilities / equipment quantities
+        $template->setValue('qty_monobloc',      $request->input('qty_monobloc', ''));
+        $template->setValue('qty_table',         $request->input('qty_table', ''));
+        $template->setValue('qty_fan',           $request->input('qty_fan', ''));
+        $template->setValue('qty_rostrum',       $request->input('qty_rostrum', ''));
+        $template->setValue('qty_flag',          $request->input('qty_flag', ''));
+        $template->setValue('qty_sound',         $request->input('qty_sound', ''));
+        $template->setValue('qty_led',           $request->input('qty_led', ''));
 
         // Signature blocks – name + datetime (signatures are left blank for manual signing)
         $template->setValue('req_signature',      '');
