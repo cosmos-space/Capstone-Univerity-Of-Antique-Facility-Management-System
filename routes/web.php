@@ -9,6 +9,7 @@ use App\Http\Controllers\College\DashboardController as CollegeDashboardControll
 use App\Http\Controllers\College\FacilityController as CollegeFacilityController;
 use App\Http\Controllers\College\FormController as CollegeFormController;
 use App\Http\Controllers\Org\DashboardController as OrgDashboardController;
+use App\Http\Controllers\Org\FormController as OrgFormController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GsuFormController;
 
@@ -18,6 +19,14 @@ Route::middleware(['login.access'])->group(function () {
     Route::post('/fms-portal-entry', [AuthController::class, 'login']);
 });
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Notifications (for all authenticated users)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])
+        ->name('notifications.index');
+    Route::post('/notifications/{notification}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])
+        ->name('notifications.read');
+});
 
 // home route for viewer/general
 Route::get('/', function () {
@@ -62,10 +71,26 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('/admin/forms/facilities/{submission}/set-booking', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'setBooking'])
         ->name('admin.forms.facilities.set-booking');
 
+    // Generate PDF for approved facilities requests
+    Route::get(
+        '/admin/forms/facilities/{submission}/pdf',
+        [\App\Http\Controllers\Admin\FacilitiesFormPdfController::class, 'generate']
+    )->name('admin.forms.facilities.pdf');
+
     // User management
     Route::get('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.users.index');
     Route::get('/admin/users/create', [\App\Http\Controllers\Admin\UserController::class, 'create'])->name('admin.users.create');
     Route::post('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'store'])->name('admin.users.store');
+
+    // Booking management (GSU can override & reschedule)
+    Route::get('/admin/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index'])
+        ->name('admin.bookings.index');
+    Route::get('/admin/bookings/{booking}/edit', [\App\Http\Controllers\Admin\BookingController::class, 'edit'])
+        ->name('admin.bookings.edit');
+    Route::post('/admin/bookings/{booking}', [\App\Http\Controllers\Admin\BookingController::class, 'update'])
+        ->name('admin.bookings.update');
+    Route::post('/admin/bookings/{booking}/cancel', [\App\Http\Controllers\Admin\BookingController::class, 'cancel'])
+        ->name('admin.bookings.cancel');
 });
 
 // College Staff
@@ -90,16 +115,28 @@ Route::middleware(['auth', 'role:college_staff'])->group(function () {
         ->name('college.requests.facilities.create');
     Route::post('/college/requests/facilities', [\App\Http\Controllers\College\FormController::class, 'storeFacilities'])
         ->name('college.requests.facilities.store');
-});
 
-// College Staff
-Route::middleware(['auth', 'role:college_staff'])->group(function () {
-    Route::get('/college/dashboard', [CollegeDashboardController::class, 'index'])->name('college.dashboard');
+    // My Facilities Requests (College)
+    Route::get('/college/requests', [\App\Http\Controllers\College\FormController::class, 'indexFacilities'])
+        ->name('college.requests.index');
+
+    Route::get(
+        '/college/requests/facilities/{submission}',
+        [\App\Http\Controllers\College\FormController::class, 'showFacilities']
+    )->name('college.requests.facilities.show');
 });
 
 // Org Staff
 Route::middleware(['auth', 'role:org_staff'])->group(function () {
     Route::get('/org/dashboard', [OrgDashboardController::class, 'index'])->name('org.dashboard');
+
+    // Facilities Utilization Form (Org → GSU)
+    Route::get('/org/requests/facilities', [OrgFormController::class, 'createFacilities'])
+        ->name('org.requests.facilities.create');
+    Route::post('/org/requests/facilities', [OrgFormController::class, 'storeFacilities'])
+        ->name('org.requests.facilities.store');
+    Route::get('/org/requests/facilities/index', [OrgFormController::class, 'indexFacilities'])
+        ->name('org.requests.facilities.index');
 });
 
 // TEMP: create test users for login (remove after you test)
@@ -159,4 +196,3 @@ Route::get('/make-user', function () {
 
     return $user;
 });
- 

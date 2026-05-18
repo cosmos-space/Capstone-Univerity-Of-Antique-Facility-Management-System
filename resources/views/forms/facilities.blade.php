@@ -27,7 +27,7 @@
     padding: 48px 56px;
     box-shadow: 0 4px 32px rgba(0,0,0,.15);
   }
-
+ 
   .header {
     text-align: center;
     margin-bottom: 22px;

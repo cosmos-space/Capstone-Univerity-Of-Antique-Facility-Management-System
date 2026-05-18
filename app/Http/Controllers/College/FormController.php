@@ -5,6 +5,8 @@ namespace App\Http\Controllers\College;
 use App\Http\Controllers\Controller;
 use App\Models\Facility;
 use App\Models\FormSubmission;
+use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,7 +16,7 @@ class FormController extends Controller
      * Show the Facilities Utilization online request form.
      */
     public function createFacilities()
-    {
+    { 
         $user = Auth::user();
 
         // GSU-managed facilities + this college's own facilities
@@ -92,7 +94,67 @@ class FormController extends Controller
             'payload'        => $payload,
         ]);
 
+        // Notify requester
+        Notification::create([
+            'user_id' => $user->id,
+            'type'    => 'form_pending',
+            'title'   => 'Facilities utilization request submitted',
+            'message' => 'Your request has been sent to GSU for review.',
+            'data'    => ['submission_id' => FormSubmission::where('requester_id', $user->id)->latest()->first()->id ?? null],
+        ]);
+
+        // Notify admin(s)
+        foreach (User::where('role', 'admin')->get() as $admin) {
+            Notification::create([
+                'user_id' => $admin->id,
+                'type'    => 'form_pending_admin',
+                'title'   => 'New facilities request from college',
+                'message' => $user->college_name . ' submitted a new utilization request.',
+                'data'    => ['submission_id' => FormSubmission::where('requester_id', $user->id)->latest()->first()->id ?? null],
+            ]);
+        }
+
         return redirect()->route('college.dashboard')
             ->with('status', 'Facilities utilization request submitted to GSU.');
+    }
+
+    /**
+     * List the current college staff member's requests.
+     */
+    public function indexFacilities()
+    {
+        $user = Auth::user();
+
+        $submissions = FormSubmission::with('requester')
+            ->where('type', 'facilities_utilization')
+            ->where('requester_id', $user->id)
+            ->orderByDesc('created_at')
+            ->paginate(10);
+
+        return view('college.requests.facilities_index', compact('submissions'));
+    }
+
+    /**
+     * Show a single facilities utilization request for this college staff user.
+     */
+    public function showFacilities(FormSubmission $submission)
+    {
+        $user = Auth::user();
+
+        if (
+            $submission->type !== 'facilities_utilization' ||
+            $submission->requester_id !== $user->id
+        ) {
+            abort(404);
+        }
+
+        $payload = $submission->payload ?? [];
+        $facility = null;
+
+        if (!empty($payload['facility_id'])) {
+            $facility = Facility::find($payload['facility_id']);
+        }
+
+        return view('college.requests.facilities_show', compact('submission', 'payload', 'facility'));
     }
 }

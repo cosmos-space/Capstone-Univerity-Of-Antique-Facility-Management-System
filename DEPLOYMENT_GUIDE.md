@@ -32,7 +32,7 @@ FMS_LOGIN_URL=http://127.0.0.1:8000/fms-portal-entry
 
 ### Development (`.env`)
 
-```env
+```env 
 FMS_ACCESS_TOKEN=UA-FMS-ACCESS-2025
 FMS_LAUNCHER_SECRET=UA-FMS-2025
 FMS_ADMIN_SECRET=UA-ADMIN-2025

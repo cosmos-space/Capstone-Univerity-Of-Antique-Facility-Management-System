@@ -7,4 +7,4 @@
         Booking management functionality will be implemented here. This will allow college staff to review and approve/reject booking requests for their facilities.
     </p>
 </div>
-@endsection
+@endsection 

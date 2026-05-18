@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\FormSubmission;
 use App\Models\Facility;
+use App\Models\Booking;
+use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class FormSubmissionController extends Controller
-{
+{ 
     /**
      * List facilities utilization form submissions.
      */
@@ -53,7 +56,16 @@ class FormSubmissionController extends Controller
         $submission->status = 'approved';
         $submission->save();
 
-        // Future: notify requester (email/notification), log audit, etc.
+        // Notify requester: approved, go to GSU office
+        if ($submission->requester) {
+            Notification::create([
+                'user_id' => $submission->requester_id,
+                'type'    => 'form_approved',
+                'title'   => 'Facilities utilization request approved',
+                'message' => 'Please proceed to the GSU office to sign and finalize the form.',
+                'data'    => ['submission_id' => $submission->id],
+            ]);
+        }
 
         return redirect()->route('admin.forms.facilities.index')
             ->with('status', 'Request approved. Requester must proceed to GSU office to sign and finalize the form.');
@@ -70,6 +82,16 @@ class FormSubmissionController extends Controller
 
         $submission->status = 'disapproved';
         $submission->save();
+
+        if ($submission->requester) {
+            Notification::create([
+                'user_id' => $submission->requester_id,
+                'type'    => 'form_disapproved',
+                'title'   => 'Facilities utilization request disapproved',
+                'message' => 'Your request was disapproved by GSU.',
+                'data'    => ['submission_id' => $submission->id],
+            ]);
+        }
 
         return redirect()->route('admin.forms.facilities.index')
             ->with('status', 'Request disapproved.');
@@ -171,7 +193,22 @@ class FormSubmissionController extends Controller
         $submission->status = 'converted';
         $submission->save();
 
+        // Notify requester: booking created
+        if ($submission->requester) {
+            Notification::create([
+                'user_id' => $submission->requester_id,
+                'type'    => 'booking_created',
+                'title'   => 'Booking confirmed',
+                'message' => "Your facilities request has been converted into a booking ({$booking->booking_code}).",
+                'data'    => [
+                    'submission_id' => $submission->id,
+                    'booking_id'    => $booking->id,
+                ],
+            ]);
+        }
+
         return redirect()->route('admin.forms.facilities.index')
             ->with('status', "Booking created (Code: {$booking->booking_code}) and request marked as converted.");
     }
+
 }

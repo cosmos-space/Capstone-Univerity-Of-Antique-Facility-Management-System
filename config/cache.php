@@ -28,7 +28,7 @@ return [
     |
     | Supported drivers: "array", "database", "file", "memcached",
     |                    "redis", "dynamodb", "octane",
-    |                    "failover", "null"
+    |                     "failover", "null"
     |
     */
 

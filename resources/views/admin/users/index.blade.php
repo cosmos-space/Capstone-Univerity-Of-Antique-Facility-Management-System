@@ -26,7 +26,7 @@
                         <th class="px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Unit</th>
                         <th class="px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Created</th>
                     </tr>
-                </thead>
+                </thead> 
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($users as $user)
                         <tr>

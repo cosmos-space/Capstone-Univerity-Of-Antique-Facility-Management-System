@@ -22,7 +22,7 @@ class LoginAccessMiddleware
             // Vague error - doesn't reveal why access failed
             abort(404);
         }
-        
+         
         // If role is specified, validate it
         if ($requestedRole && !in_array($requestedRole, ['admin', 'college_staff', 'org_staff'])) {
             // Clear any existing session and show vague error

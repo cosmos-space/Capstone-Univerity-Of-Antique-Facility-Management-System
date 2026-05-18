@@ -1,37 +1,33 @@
 @extends('layouts.admin')
 
 @section('admin-content')
-<div class="bg-white rounded shadow p-6">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-semibold">Facilities Management</h1>
-        <a href="{{ route('admin.facilities.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-            Add New Facility
-        </a>
+<div class="fms-card">
+    <div class="fms-page-header">
+        <h1 class="fms-page-title">Facilities Management</h1>
+        <a href="{{ route('admin.facilities.create') }}" class="fms-btn-primary">Add New Facility</a>
     </div>
 
     @if($facilities->count() > 0)
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+        <div class="fms-table-wrap">
+            <table class="fms-table">
+                <thead>
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Availability</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Owner</th>
+                        <th>Availability</th>
+                        <th>Actions</th>
                     </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                </thead> 
+                <tbody>
                     @foreach($facilities as $facility)
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $facility->name }}</div>
-                                <div class="text-sm text-gray-500">{{ Str::limit($facility->description, 50) }}</div>
+                            <td>
+                                <div class="font-medium">{{ $facility->name }}</div>
+                                <div class="text-xs text-neutral-600">{{ Str::limit($facility->description, 50) }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $facility->location }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td>{{ $facility->location }}</td>
+                            <td>
                                 @php
                                     $ownerLabel = match ($facility->owner_type) {
                                         'gsu'     => 'GSU',
@@ -40,41 +36,23 @@
                                         default   => ucfirst($facility->owner_type ?? 'Unknown'),
                                     };
                                 @endphp
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                    {{ $ownerLabel }}
-                                </span>
+                                <span class="fms-badge">{{ $ownerLabel }}</span>
                                 @if($facility->owner_college)
-                                    <span class="text-xs text-gray-400 ml-1">({{ $facility->owner_college }})</span>
+                                    <span class="ml-1 text-xs text-neutral-500">({{ $facility->owner_college }})</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td>
                                 @php
                                     $status = $facility->availability_status ?? 'available';
                                 @endphp
-                                @if($status === 'available')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        Available
-                                    </span>
-                                @elseif($status === 'maintenance')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                        Maintenance
-                                    </span>
-                                @elseif($status === 'unavailable')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                        Unavailable
-                                    </span>
-                                @else
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                        {{ ucfirst($status) }}
-                                    </span>
-                                @endif
+                                <span class="fms-badge">{{ ucfirst($status) }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ route('admin.facilities.edit', $facility) }}" class="text-blue-600 hover:text-blue-900 mr-3">Edit</a>
+                            <td class="space-x-3">
+                                <a href="{{ route('admin.facilities.edit', $facility) }}" class="fms-link">Edit</a>
                                 <form action="{{ route('admin.facilities.destroy', $facility) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this facility?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                    <button type="submit" class="fms-link">Delete</button>
                                 </form>
                             </td>
                         </tr>
@@ -83,15 +61,11 @@
             </table>
         </div>
 
-        <div class="mt-4">
-            {{ $facilities->links() }}
-        </div>
+        <div class="mt-4">{{ $facilities->links() }}</div>
     @else
-        <div class="text-center py-12">
-            <p class="text-gray-500 mb-4">No facilities found.</p>
-            <a href="{{ route('admin.facilities.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                Add Your First Facility
-            </a>
+        <div class="py-12 text-center">
+            <p class="mb-4 text-neutral-600">No facilities found.</p>
+            <a href="{{ route('admin.facilities.create') }}" class="fms-btn-primary">Add Your First Facility</a>
         </div>
     @endif
 </div>

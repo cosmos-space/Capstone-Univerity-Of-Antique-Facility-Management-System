@@ -1,10 +1,10 @@
 @extends('layouts.admin')
 
 @section('admin-content')
-<div class="bg-white rounded shadow p-6">
-    <div class="mb-6">
-        <h1 class="text-2xl font-semibold">Add New Facility</h1>
-        <a href="{{ route('admin.facilities.index') }}" class="text-blue-600 hover:text-blue-800">← Back to Facilities</a>
+<div class="fms-card">
+    <div class="fms-page-header">
+        <h1 class="fms-page-title">Add New Facility</h1>
+        <a href="{{ route('admin.facilities.index') }}" class="fms-link">← Back to Facilities</a>
     </div>
 
     <form method="POST" action="{{ route('admin.facilities.store') }}" class="space-y-6">
@@ -86,10 +86,10 @@
         </div>
 
         <div class="flex items-center justify-end space-x-4">
-            <a href="{{ route('admin.facilities.index') }}" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+            <a href="{{ route('admin.facilities.index') }}" class="fms-btn-secondary">
                 Cancel
             </a>
-            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            <button type="submit" class="fms-btn-primary">
                 Create Facility
             </button>
         </div>
@@ -106,4 +106,4 @@ document.getElementById('owner_type').addEventListener('change', function() {
     }
 });
 </script>
-@endsection
+@endsection 

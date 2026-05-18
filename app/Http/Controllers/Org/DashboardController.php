@@ -12,3 +12,4 @@ class DashboardController extends Controller
         return view('org.dashboard');
     }
 }
+ 

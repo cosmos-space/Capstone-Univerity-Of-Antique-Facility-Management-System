@@ -22,7 +22,7 @@ class Facility extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
-
+ 
     /**
      * Determine if this facility is part of the seeded core UA list.
      *

@@ -16,7 +16,7 @@ class GsuFormController extends Controller
     {
         return view('forms.facilities');
     }
-
+ 
     public function downloadFacilities(Request $request): BinaryFileResponse
     {
         $request->validate([
@@ -51,9 +51,16 @@ class GsuFormController extends Controller
             }
         }
 
-        $template = new TemplateProcessor(
-            storage_path('app/templates/FACILITIES-AND-UTILIZATION-FORM-TEMPLATE.docx')
-        );
+        $templatePath = base_path('app/templates/FACILITIES-AND-UTILIZATION-FORM-TEMPLATE.docx');
+        if (!file_exists($templatePath)) {
+            $templatePath = storage_path('app/templates/FACILITIES-AND-UTILIZATION-FORM-TEMPLATE.docx');
+        }
+
+        if (!file_exists($templatePath)) {
+            abort(500, 'Facilities Utilization Form template not found.');
+        }
+
+        $template = new TemplateProcessor($templatePath);
 
         // Auto-generate control number if not provided
         $controlNo = $request->input('control_no', $this->generateControlNumber('facilities'));

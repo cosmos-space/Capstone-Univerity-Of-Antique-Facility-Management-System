@@ -32,7 +32,7 @@ It creates:
 This user is optional for general testing and is **not** used for admin / college / org portal login.
 
 ---
-
+ 
 ## 2. Helper routes (real test accounts)
 
 Admin, college staff, and org staff accounts are created by temporary GET routes in `routes/web.php` (see comment: remove after testing).
@@ -95,3 +95,4 @@ Remove or protect the `/make-*` routes before production deployment. They are in
 
 - `QUICKSTART.md` — full local setup flow
 - `LAUNCHER_README.md` — launcher keys and build steps
+

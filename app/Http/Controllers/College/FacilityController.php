@@ -22,7 +22,7 @@ class FacilityController extends Controller
 
         return view('college.facilities.index', compact('facilities', 'collegeName'));
     }
-
+ 
     /**
      * Show the form for creating a new facility.
      */

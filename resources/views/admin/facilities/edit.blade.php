@@ -30,7 +30,7 @@
                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
             @enderror
         </div>
-
+ 
         <div>
             <label for="owner_type" class="block text-sm font-medium text-gray-700">Owner Type</label>
             <select name="owner_type" id="owner_type" required

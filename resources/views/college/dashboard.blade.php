@@ -1,21 +1,28 @@
 @extends('layouts.college')
 
 @section('college-content')
-    <div class="bg-white rounded shadow p-6">
-        <h1 class="text-2xl font-semibold mb-4">College Staff Dashboard</h1>
-        <p class="text-gray-700 mb-4">
-            Welcome to the College Staff Portal. Manage your college's facilities and booking requests from here.
+    <div class="fms-card">
+        <div class="fms-page-header border-0 pb-0 mb-6">
+            <h1 class="fms-page-title">College Staff Dashboard</h1>
+        </div>
+        <p class="mb-6 text-sm text-neutral-600">
+            Manage your college facilities, bookings, and utilization requests from the sidebar.
         </p>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-            <div class="bg-blue-50 rounded p-4 border border-blue-200">
-                <h3 class="font-semibold text-blue-800 mb-2">My Facilities</h3>
-                <p class="text-sm text-blue-600">View and manage facilities owned by your college</p>
-            </div>
-            <div class="bg-green-50 rounded p-4 border border-green-200">
-                <h3 class="font-semibold text-green-800 mb-2">Booking Requests</h3>
-                <p class="text-sm text-green-600">Review and manage booking requests for your facilities</p>
-            </div>
+
+        <h2 class="mb-3 text-sm font-semibold uppercase tracking-widest text-neutral-500">Quick access</h2>
+        <div class="fms-stat-grid">
+            <a href="{{ route('college.facilities.index') }}" class="fms-stat-card">
+                <h3>My facilities</h3>
+                <p>View and manage facilities owned by your college</p>
+            </a>
+            <a href="{{ route('college.bookings.index') }}" class="fms-stat-card">
+                <h3>Bookings</h3>
+                <p>Review booking requests for your facilities</p>
+            </a>
+            <a href="{{ route('college.requests.facilities.create') }}" class="fms-stat-card">
+                <h3>Utilization request</h3>
+                <p>Submit a facilities utilization request to GSU</p>
+            </a>
         </div>
     </div>
 @endsection

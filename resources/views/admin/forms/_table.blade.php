@@ -30,7 +30,7 @@
                     <td>
                         <a href="{{ route('admin.forms.show', $submission->id) }}" class="btn btn-sm btn-info">View</a>
                     </td>
-                </tr>
+                </tr> 
             @endforeach
         </tbody>
     </table>

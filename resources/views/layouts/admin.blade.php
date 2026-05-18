@@ -1,19 +1,51 @@
 @extends('layouts.app')
 
+@section('main-class', 'mx-auto w-full max-w-[1440px] flex-1 px-0 py-0')
+
 @section('content')
-<div class="flex">
-    <aside class="w-64 mr-6">
-        <div class="bg-white rounded shadow p-4 mb-4">
-            <h2 class="text-sm font-semibold mb-2">GSU Admin Menu</h2>
-            <ul class="space-y-1 text-sm">
-                <li><a href="{{ route('admin.dashboard') }}" class="text-blue-600 hover:text-blue-800">Dashboard</a></li>
-                <li><a href="{{ route('admin.facilities.index') }}" class="text-blue-600 hover:text-blue-800">Facilities</a></li>
-                <li><a href="{{ route('admin.forms.facilities.index') }}" class="text-blue-600 hover:text-blue-800">Facilities Requests</a></li>
-                <li><a href="{{ route('admin.users.index') }}" class="text-blue-600 hover:text-blue-800">User Management</a></li>
-            </ul>
-        </div>
-    </aside>
-    <section class="flex-1">
+<div class="fms-shell">
+    @include('layouts.partials.sidebar', [
+        'portalTitle' => 'GSU Admin',
+        'portalSubtitle' => optional(auth()->user())->name,
+        'sections' => [
+            [
+                'heading' => 'Overview',
+                'links' => [
+                    ['label' => 'Dashboard', 'route' => 'admin.dashboard'],
+                ],
+            ],
+            [
+                'heading' => 'Facilities',
+                'links' => [
+                    ['label' => 'All facilities', 'route' => 'admin.facilities.index'],
+                    ['label' => 'Add facility', 'route' => 'admin.facilities.create'],
+                ],
+            ],
+            [
+                'heading' => 'Requests',
+                'links' => [
+                    ['label' => 'Utilization requests', 'route' => 'admin.forms.facilities.index', 'routes' => 'admin.forms.facilities.*'],
+                    ['label' => 'Bookings', 'route' => 'admin.bookings.index', 'routes' => 'admin.bookings.*'],
+                ],
+            ],
+            [
+                'heading' => 'GSU forms (PDF)',
+                'links' => [
+                    ['label' => 'Facilities utilization form', 'route' => 'forms.facilities.show', 'routes' => 'forms.facilities.*'],
+                    ['label' => 'Repair & maintenance form', 'route' => 'forms.repair.show', 'routes' => 'forms.repair.*'],
+                ],
+            ], 
+            [
+                'heading' => 'Administration',
+                'links' => [
+                    ['label' => 'Users', 'route' => 'admin.users.index'],
+                    ['label' => 'Create user', 'route' => 'admin.users.create'],
+                ],
+            ],
+        ],
+    ])
+
+    <section class="fms-main">
         @yield('admin-content')
     </section>
 </div>

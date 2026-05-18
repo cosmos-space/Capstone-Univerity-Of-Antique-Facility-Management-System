@@ -24,7 +24,7 @@ class RoleMiddleware
         if (!in_array($userRole, $roles)) {
             abort(403); // Forbidden
         }
-
+ 
         return $next($request);
     }
 }

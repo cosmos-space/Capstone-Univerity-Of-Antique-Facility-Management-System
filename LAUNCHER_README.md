@@ -24,7 +24,7 @@ Laravel must expose the same `FMS_ACCESS_TOKEN` and `FMS_LOGIN_URL` in `.env` (s
 
 ## Prerequisites
 
-- Python 3.8+
+- Python 3.8+ 
 - Laravel backend running (default: `http://127.0.0.1:8000`)
 - Dependencies: `pip install pywebview` (optional on Windows: `cefpython3` for the CEF backend used by the launchers)
 

@@ -92,7 +92,7 @@
     @endif
 
     {{-- Actions --}}
-    <div class="flex items-center space-x-4 mt-4">
+    <div class="flex flex-wrap items-center gap-3 mt-4">
         @if($submission->status === 'pending')
             <form method="POST" action="{{ route('admin.forms.facilities.approve', $submission) }}">
                 @csrf
@@ -109,23 +109,22 @@
         @endif
 
         @if($submission->status === 'approved')
-            {{-- Future: wire this to GsuFormController to fill DOCX/PDF from payload --}}
-            <button type="button" class="px-4 py-2 bg-gray-700 text-white rounded text-sm opacity-70 cursor-not-allowed"
-                    title="PDF generation will be wired to docx template later">
-                Generate PDF (coming soon)
-            </button>
+            {{-- Generate PDF for the approved request --}}
+            <form method="GET" action="{{ route('admin.forms.facilities.pdf', $submission) }}">
+                <button type="submit" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800 text-sm">
+                    Generate PDF
+                </button>
+            </form>
+
+            {{-- Convert to booking after physical signing --}}
+            <form method="POST" action="{{ route('admin.forms.facilities.set-booking', $submission) }}">
+                @csrf
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+                    Set Booking
+                </button>
+            </form>
         @endif
-
-        <form method="POST" action="{{ route('admin.forms.facilities.set-booking', $submission) }}">
-            @csrf
-            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
-                Set Booking
-            </button>
-        </form>
-
-        <a href="{{ route('admin.forms.facilities.index') }}" class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 text-sm">
-            Back to Requests
-        </a>
     </div>
 </div>
 @endsection
+ 

@@ -32,4 +32,4 @@ class MaintenanceLog extends Model
         return $this->belongsTo(User::class, 'staff_id');
     }
 }
- 
+  

@@ -1,10 +1,13 @@
 @extends('layouts.org')
 
 @section('org-content')
-    <div class="bg-white rounded shadow p-6">
-        <h1 class="text-2xl font-semibold mb-4">Org Staff Dashboard</h1>
-        <p class="text-gray-700">
-            Welcome to the Organization Staff Portal. More functionality will be added here.
+    <div class="fms-card">
+        <div class="fms-page-header border-0 pb-0 mb-6">
+            <h1 class="fms-page-title">Organization Staff Dashboard</h1>
+        </div>
+        <p class="text-sm text-neutral-600">
+            Welcome to the Organization Staff Portal. Additional features will be added here.
         </p>
     </div>
 @endsection
+ 
