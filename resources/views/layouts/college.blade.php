@@ -12,6 +12,7 @@
                 'heading' => 'Overview',
                 'links' => [
                     ['label' => 'Dashboard', 'route' => 'college.dashboard'],
+                    ['label' => 'Booking calendar', 'route' => 'college.calendar'],
                 ],
             ],
             [

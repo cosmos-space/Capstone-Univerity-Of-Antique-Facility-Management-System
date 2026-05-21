@@ -12,12 +12,11 @@ use App\Http\Controllers\Org\DashboardController as OrgDashboardController;
 use App\Http\Controllers\Org\FormController as OrgFormController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GsuFormController;
+use App\Http\Controllers\PublicCalendarController;
 
-// Authentication routes (protected entry point)
-Route::middleware(['login.access'])->group(function () {
-    Route::get('/fms-portal-entry', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/fms-portal-entry', [AuthController::class, 'login']);
-});
+// Authentication routes (simple web login)
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Notifications (for all authenticated users)
@@ -28,10 +27,9 @@ Route::middleware(['auth'])->group(function () {
         ->name('notifications.read');
 });
 
-// home route for viewer/general
-Route::get('/', function () {
-    return view('welcome'); // later: calendar view
-})->name('home');
+// home route for viewer/general: public read-only calendar
+Route::get('/', [PublicCalendarController::class, 'index'])
+    ->name('home');
 
 // Simple health check (for debugging)
 Route::get('/healthz', function () {
@@ -91,6 +89,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('admin.bookings.update');
     Route::post('/admin/bookings/{booking}/cancel', [\App\Http\Controllers\Admin\BookingController::class, 'cancel'])
         ->name('admin.bookings.cancel');
+    Route::get('/admin/calendar', [\App\Http\Controllers\Admin\BookingController::class, 'calendar'])
+        ->name('admin.calendar');
+    Route::get('/admin/overview', [\App\Http\Controllers\Admin\BookingController::class, 'overview'])
+        ->name('admin.overview');
 });
 
 // College Staff
@@ -105,10 +107,14 @@ Route::middleware(['auth', 'role:college_staff'])->group(function () {
     Route::put('/college/facilities/{facility}', [CollegeFacilityController::class, 'update'])->name('college.facilities.update');
     Route::delete('/college/facilities/{facility}', [CollegeFacilityController::class, 'destroy'])->name('college.facilities.destroy');
     
-    // Bookings (placeholder - to be implemented)
-    Route::get('/college/bookings', function() {
+    // Bookings list (existing page, untouched)
+    Route::get('/college/bookings', function () {
         return view('college.bookings.index');
     })->name('college.bookings.index');
+
+    // College booking calendar (read-only)
+    Route::get('/college/calendar', [\App\Http\Controllers\College\BookingController::class, 'calendar'])
+        ->name('college.calendar');
 
     // Facilities Utilization Form (College → GSU)
     Route::get('/college/requests/facilities', [\App\Http\Controllers\College\FormController::class, 'createFacilities'])
@@ -129,6 +135,10 @@ Route::middleware(['auth', 'role:college_staff'])->group(function () {
 // Org Staff
 Route::middleware(['auth', 'role:org_staff'])->group(function () {
     Route::get('/org/dashboard', [OrgDashboardController::class, 'index'])->name('org.dashboard');
+
+    // Booking calendar (read-only for this org staff)
+    Route::get('/org/bookings', [\App\Http\Controllers\Org\BookingController::class, 'calendar'])
+        ->name('org.bookings.index');
 
     // Facilities Utilization Form (Org → GSU)
     Route::get('/org/requests/facilities', [OrgFormController::class, 'createFacilities'])

@@ -26,8 +26,10 @@ class NotificationController extends Controller
             abort(403);
         }
 
-        $notification->is_read = true;
-        $notification->save();
+        if (! $notification->is_read) {
+            $notification->is_read = true;
+            $notification->save();
+        }
 
         return back();
     }

@@ -26,6 +26,8 @@
                 'links' => [
                     ['label' => 'Utilization requests', 'route' => 'admin.forms.facilities.index', 'routes' => 'admin.forms.facilities.*'],
                     ['label' => 'Bookings', 'route' => 'admin.bookings.index', 'routes' => 'admin.bookings.*'],
+                    ['label' => 'Booking calendar', 'route' => 'admin.calendar'],
+                    ['label' => 'Monthly overview', 'route' => 'admin.overview'],
                 ],
             ],
             [

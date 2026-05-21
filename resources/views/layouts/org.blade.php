@@ -15,6 +15,12 @@
                 ],
             ],
             [
+                'heading' => 'Bookings',
+                'links' => [
+                    ['label' => 'Booking calendar', 'route' => 'org.bookings.index'],
+                ],
+            ],
+            [
                 'heading' => 'Requests',
                 'links' => [
                     ['label' => 'My requests', 'route' => 'org.requests.facilities.index', 'routes' => 'org.requests.facilities.*'],

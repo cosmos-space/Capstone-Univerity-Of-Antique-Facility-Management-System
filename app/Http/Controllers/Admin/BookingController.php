@@ -30,6 +30,89 @@ class BookingController extends Controller
     }
 
     /**
+     * Month calendar view for admin: shows bookings per day and facility counts.
+     */
+    public function calendar(Request $request)
+    {
+        $month = $request->query('month');
+        $current = $month
+            ? Carbon::createFromFormat('Y-m', $month)->startOfMonth()
+            : now()->startOfMonth();
+
+        $start = $current->copy()->startOfMonth();
+        $end   = $current->copy()->endOfMonth();
+
+        $bookings = Booking::with('facility')
+            ->whereBetween('start_time', [$start, $end])
+            ->orderBy('start_time')
+            ->get();
+
+        $days = [];
+        foreach ($bookings as $booking) {
+            $dayKey = $booking->start_time->toDateString();
+            if (!isset($days[$dayKey])) {
+                $days[$dayKey] = [];
+            }
+            $days[$dayKey][] = $booking;
+        }
+
+        $facilityCounts = Facility::orderBy('name')
+            ->get()
+            ->map(function ($facility) use ($start, $end) {
+                $count = $facility->bookings()
+                    ->whereBetween('start_time', [$start, $end])
+                    ->whereIn('status', ['approved', 'rescheduled'])
+                    ->count();
+
+                return [
+                    'facility' => $facility,
+                    'count'    => $count,
+                ];
+            });
+
+        return view('admin.calendar.index', [
+            'currentMonth'   => $current,
+            'days'           => $days,
+            'facilityCounts' => $facilityCounts,
+        ]);
+    }
+
+    /**
+     * Monthly overview: simple line chart for approved/rescheduled bookings per day.
+     */
+    public function overview(Request $request)
+    {
+        $month = $request->query('month');
+        $current = $month
+            ? Carbon::createFromFormat('Y-m', $month)->startOfMonth()
+            : now()->startOfMonth();
+
+        $start = $current->copy()->startOfMonth();
+        $end   = $current->copy()->endOfMonth();
+
+        $bookings = Booking::whereBetween('start_time', [$start, $end])
+            ->whereIn('status', ['approved', 'rescheduled'])
+            ->get();
+
+        $days = [];
+        for ($d = 1; $d <= $current->daysInMonth; $d++) {
+            $days[$d] = 0;
+        }
+
+        foreach ($bookings as $booking) {
+            $day = (int) $booking->start_time->format('j');
+            if (isset($days[$day])) {
+                $days[$day]++;
+            }
+        }
+
+        return view('admin.overview.index', [
+            'currentMonth' => $current,
+            'series'       => $days,
+        ]);
+    }
+
+    /**
      * Admin reschedules / modifies an existing booking.
      * Can change facility, date/time, and equipment payload.
      * Marks status as 'rescheduled' and notifies requester.

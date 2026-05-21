@@ -129,6 +129,11 @@ class FormSubmissionController extends Controller
             return back()->withErrors(['status' => 'Incomplete date/time or facility information in the submission.']);
         }
 
+        // Enforce at least 7 days lead time (admin should not convert too-close dates)
+        if (\Carbon\Carbon::parse($dateActivity)->lessThan(now()->addDays(7)->startOfDay())) {
+            return back()->withErrors(['status' => 'Date of activity is less than 7 days away. Please coordinate a manual exception if truly needed.']);
+        }
+
         $facility = Facility::find($facilityId);
         if (!$facility) {
             return back()->withErrors(['status' => 'Facility not found.']);

@@ -8,7 +8,7 @@
             <div class="fms-alert-error mb-4">{{ $errors->first() }}</div>
         @endif
 
-        <form method="POST" action="{{ route('login') }}">
+        <form method="POST" action="{{ route('login.post') }}">
             @csrf
 
             <div class="mb-4">

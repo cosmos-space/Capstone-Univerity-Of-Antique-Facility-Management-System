@@ -42,7 +42,7 @@ class FormController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
-            'date_activity' => 'required|date',
+            'date_activity' => 'required|date|after_or_equal:' . now()->addDays(7)->toDateString(),
             'start_time'    => 'required|date_format:H:i',
             'end_time'      => 'required|date_format:H:i|after:start_time',
             'facility_id'   => 'required|exists:facilities,id',
