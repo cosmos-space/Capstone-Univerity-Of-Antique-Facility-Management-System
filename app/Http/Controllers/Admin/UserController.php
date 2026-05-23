@@ -3,42 +3,26 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUserRequest;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
-{ 
-    /**
-     * List users (basic).
-     */
+{
     public function index()
     {
         $users = User::orderBy('name')->paginate(20);
         return view('admin.users.index', compact('users'));
     }
 
-    /**
-     * Show form to create a new user.
-     */
     public function create()
     {
         return view('admin.users.create');
     }
 
-    /**
-     * Store a new user.
-     */
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
-        $validated = $request->validate([
-            'name'             => 'required|string|max:255',
-            'email'            => 'required|email|unique:users,email',
-            'password'         => 'required|string|min:8|confirmed',
-            'role'             => 'required|in:admin,college_staff,org_staff',
-            'college_name'     => 'nullable|string|max:255',
-            'organization_name'=> 'nullable|string|max:255',
-        ]);
+        $validated = $request->validated();
 
         $data = [
             'name'     => $validated['name'],

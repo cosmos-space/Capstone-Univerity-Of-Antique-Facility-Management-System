@@ -3,28 +3,22 @@
 namespace App\Http\Controllers\College;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Traits\GroupsBookingsByDay;
 use App\Models\Booking;
 use App\Models\Facility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 
 class BookingController extends Controller
 {
-    /**
-     * Read-only calendar of bookings for college staff.
-     * Shows bookings requested by the user plus bookings for college-owned facilities.
-     */
+    use GroupsBookingsByDay;
+
     public function calendar(Request $request)
     {
         $user = Auth::user();
         $collegeName = $user->college_name;
 
-        $month = $request->query('month');
-        $current = $month
-            ? Carbon::createFromFormat('Y-m', $month)->startOfMonth()
-            : now()->startOfMonth();
-
+        $current = $this->resolveMonth($request);
         $start = $current->copy()->startOfMonth();
         $end = $current->copy()->endOfMonth();
 
@@ -45,20 +39,13 @@ class BookingController extends Controller
             ->orderBy('start_time')
             ->get();
 
-        $days = [];
-        foreach ($bookings as $booking) {
-            $dayKey = $booking->start_time->toDateString();
-            if (!isset($days[$dayKey])) {
-                $days[$dayKey] = [];
-            }
-            $days[$dayKey][] = $booking;
-        }
+        $days = $this->groupByDay($bookings);
 
         $facilityCounts = Facility::whereIn('id', $collegeFacilityIds)
             ->orderBy('name')
             ->get()
             ->map(function ($facility) use ($start, $end) {
-                $count = Booking::where('facility_id', $facility->id)
+                $count = $facility->bookings()
                     ->whereBetween('start_time', [$start, $end])
                     ->whereIn('status', ['approved', 'rescheduled'])
                     ->count();

@@ -22,6 +22,45 @@ class FormSubmission extends Model
         'payload' => 'array',
     ];
 
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === 'approved';
+    }
+
+    public function isFacilitiesUtilization(): bool
+    {
+        return $this->type === 'facilities_utilization';
+    }
+
+    public function markApproved(): void
+    {
+        $this->status = 'approved';
+        $this->save();
+    }
+
+    public function markDisapproved(): void
+    {
+        $this->status = 'disapproved';
+        $this->save();
+    }
+
+    public function markConverted(): void
+    {
+        $this->status = 'converted';
+        $this->save();
+    }
+
+    public function markCancelled(): void
+    {
+        $this->status = 'cancelled';
+        $this->save();
+    }
+
     public function requester()
     {
         return $this->belongsTo(User::class, 'requester_id');
