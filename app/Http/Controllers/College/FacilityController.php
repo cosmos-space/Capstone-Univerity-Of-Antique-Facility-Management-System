@@ -14,9 +14,12 @@ class FacilityController extends Controller
      */
     public function index()
     {
-        $collegeName = Auth::user()->college_name;
+        $user = Auth::user();
+        $collegeName = $user->college_name;
+        $collegeId = $user->college_id;
+
         $facilities = Facility::where('owner_type', 'college')
-            ->where('owner_college', $collegeName)
+            ->ownedByCollege($collegeId, $collegeName)
             ->orderBy('name')
             ->paginate(10);
 
@@ -37,7 +40,9 @@ class FacilityController extends Controller
      */
     public function store(Request $request)
     {
-        $collegeName = Auth::user()->college_name;
+        $user = Auth::user();
+        $collegeName = $user->college_name;
+        $collegeId = $user->college_id;
 
         $validated = $request->validate([
             'name'                => 'required|string|max:255',
@@ -49,6 +54,7 @@ class FacilityController extends Controller
 
         $validated['owner_type'] = 'college';
         $validated['owner_college'] = $collegeName;
+        $validated['college_id'] = $collegeId;
 
         // New facilities from colleges must be verified by GSU:
         // start as inactive and unavailable until an admin approves.
@@ -66,12 +72,13 @@ class FacilityController extends Controller
      */
     public function edit(Facility $facility)
     {
-        // Ensure the facility belongs to the user's college
-        if ($facility->owner_type !== 'college' || $facility->owner_college !== Auth::user()->college_name) {
+        $user = Auth::user();
+
+        if (! $this->facilityBelongsToCollege($facility, $user->college_id, $user->college_name)) {
             abort(403, 'Unauthorized access.');
         }
 
-        $collegeName = Auth::user()->college_name;
+        $collegeName = $user->college_name;
         return view('college.facilities.edit', compact('facility', 'collegeName'));
     }
 
@@ -81,7 +88,7 @@ class FacilityController extends Controller
     public function update(Request $request, Facility $facility)
     {
         // Ensure the facility belongs to the user's college
-        if ($facility->owner_type !== 'college' || $facility->owner_college !== Auth::user()->college_name) {
+        if (! $this->facilityBelongsToCollege($facility, Auth::user()->college_id, Auth::user()->college_name)) {
             abort(403, 'Unauthorized access.');
         }
 
@@ -104,8 +111,7 @@ class FacilityController extends Controller
      */
     public function destroy(Facility $facility)
     {
-        // Ensure the facility belongs to the user's college
-        if ($facility->owner_type !== 'college' || $facility->owner_college !== Auth::user()->college_name) {
+        if (! $this->facilityBelongsToCollege($facility, Auth::user()->college_id, Auth::user()->college_name)) {
             abort(403, 'Unauthorized access.');
         }
 
@@ -113,5 +119,18 @@ class FacilityController extends Controller
 
         return redirect()->route('college.facilities.index')
             ->with('status', 'Facility deleted successfully.');
+    }
+
+    protected function facilityBelongsToCollege(Facility $facility, ?int $collegeId, ?string $collegeName): bool
+    {
+        if ($facility->owner_type !== 'college') {
+            return false;
+        }
+
+        if ($collegeId && $facility->college_id === $collegeId) {
+            return true;
+        }
+
+        return $facility->owner_college === $collegeName;
     }
 }

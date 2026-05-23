@@ -16,7 +16,7 @@ All encryption, hashing, and obfuscation libraries have been added to your proje
 ✅ Password hashing (bcryptjs)
 ✅ JWT support (jsonwebtoken)
 
-### 3. **Python Launcher Security** (launchers/requirements.txt)
+### 3. **Legacy Python launcher security** (launchers/requirements.txt)
 ✅ Python encryption libraries
 ✅ PyArmor for launcher obfuscation
 ✅ JWT support
@@ -47,7 +47,7 @@ composer install
 npm install
 ```
 
-**Python Dependencies (for launchers):**
+**Python Dependencies (for legacy launchers, optional):**
 ```bash
 cd launchers
 pip install -r requirements.txt
@@ -86,7 +86,7 @@ const encrypted = CryptoJS.AES.encrypt("data", "secret").toString();
 - Terser automatically minifies and obfuscates
 - JavaScript-Obfuscator provides additional obfuscation
 
-**For Python launchers:**
+**For legacy Python launchers:**
 ```bash
 cd launchers
 pyarmor obfuscate admin_launcher.py

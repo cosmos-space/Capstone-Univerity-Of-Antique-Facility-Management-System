@@ -29,6 +29,7 @@
             </a>
         </div>
  
+        {{-- GSU forms (PDF) hidden from main admin dashboard to reduce confusion.
         <h2 class="mb-3 text-sm font-semibold uppercase tracking-widest text-neutral-500">GSU forms (PDF)</h2>
         <div class="fms-stat-grid">
             <a href="{{ route('forms.facilities.show') }}" class="fms-stat-card">
@@ -40,5 +41,6 @@
                 <p>Generate PDF for repair and maintenance requests</p>
             </a>
         </div>
+        --}}
     </div>
 @endsection

@@ -12,11 +12,6 @@
                 'heading' => 'Overview',
                 'links' => [
                     ['label' => 'Dashboard', 'route' => 'org.dashboard'],
-                ],
-            ],
-            [
-                'heading' => 'Bookings',
-                'links' => [
                     ['label' => 'Booking calendar', 'route' => 'org.bookings.index'],
                 ],
             ],

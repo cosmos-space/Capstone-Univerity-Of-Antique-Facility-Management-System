@@ -39,7 +39,7 @@ npm -v
 
 Both should print a version.
 
-### 1.4 Python (for building launchers)
+### 1.4 Python (optional, legacy launcher build only)
 
 Download from: https://www.python.org/downloads/
 
@@ -50,6 +50,8 @@ After install, check:
 ```bash
 python --version
 ```
+
+Python is only required if you need to build or maintain the legacy desktop launcher clients.
 
 ## 2. Get the project
 
@@ -111,21 +113,16 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-### 3.4 Set launcher / portal settings
+### 3.4 Portal entry settings
 
-In the same .env:
+In the same `.env`:
 
 ```env
 FMS_ACCESS_TOKEN=UA-FMS-ACCESS-2025
-
-FMS_ADMIN_SECRET=UA-ADMIN-2025
-FMS_COLLEGE_SECRET=UA-COLLEGE-2025
-FMS_ORG_SECRET=UA-ORG-2025
-
 FMS_LOGIN_URL=http://127.0.0.1:8000/fms-portal-entry
 ```
 
-These values must match what the launchers expect.
+These values are required for the portal entry URL. The role-specific launcher secrets are legacy and only needed for the optional older desktop launcher flow.
 
 ## 4. Create database in XAMPP
 
@@ -165,7 +162,7 @@ npm install
 php artisan migrate
 ```
 
-### 7.2 Seed initial data (facilities + a test user)
+### 7.2 Seed initial data (facilities + sample users)
 
 ```bash
 php artisan db:seed
@@ -173,7 +170,11 @@ php artisan db:seed
 
 This will:
 - Create official UA facilities.
-- Create one generic user `test@example.com` (not used by launchers).
+- Create one generic user `test@example.com`.
+- Create sample users for testing:
+  - `adminA@example.com`, `adminB@example.com`, `adminC@example.com`
+  - `collegeA@example.com`, `collegeB@example.com`, `collegeC@example.com`
+  - `orgA@example.com`, `orgB@example.com`, `orgC@example.com`
 
 ## 8. Start the Laravel app + Vite
 
@@ -205,192 +206,17 @@ http://127.0.0.1:8000
 
 You should see the public Facility Schedule page.
 
-## 9. Create login accounts (helper routes)
+## 9. Create login accounts
 
-With `php artisan serve` still running, open your browser and go to these URLs one time each:
+With `php artisan serve` still running, open your browser and use the normal web login pages to sign in with the seeded or created accounts.
 
-### Admin:
+The `/make-*` helper routes are development-only helpers for legacy testing and should not be used in production.
 
-```
-http://127.0.0.1:8000/make-admin
-```
+## 10. Legacy launcher notes
 
-Creates / updates:
-- Email: `admin@example.com`
-- Password: `password123`
-- Role: `admin`
+The current application now targets the normal Laravel web portal and login flow directly.
 
-### College staff:
-
-```
-http://127.0.0.1:8000/make-college-staff
-```
-
-Creates:
-- Email: `college@example.com`
-- Password: `password123`
-- Role: `college_staff`
-- College: `College of Engineering`
-
-### Organization staff:
-
-```
-http://127.0.0.1:8000/make-org-staff
-```
-
-Creates:
-- Email: `org@example.com`
-- Password: `password123`
-- Role: `org_staff`
-- Org: `Student Council`
-
-These are the accounts you use after passing the launcher gate.
-
-## 10. Build the desktop launchers (.exe)
-
-You can run the .py files directly for testing, but this is how to build .exes.
-
-### 10.1 Optional: set env vars in the build terminal
-
-For local dev, defaults are already correct, but you can be explicit.
-
-In Command Prompt:
-
-```bash
-set FMS_LOGIN_URL=http://127.0.0.1:8000/fms-portal-entry
-set FMS_ACCESS_TOKEN=UA-FMS-ACCESS-2025
-set FMS_ADMIN_SECRET=UA-ADMIN-2025
-set FMS_COLLEGE_SECRET=UA-COLLEGE-2025
-set FMS_ORG_SECRET=UA-ORG-2025
-```
-
-### 10.2 Use the batch script
-
-From project root:
-
-```bash
-cd C:\Users\user\Documents\Capstone-UA-FMS\dump
-build_launchers.bat
-```
-
-The script:
-- Goes to `launchers/`.
-- Checks for Python.
-- Installs pyinstaller and pywebview if needed.
-- Builds three .exe files.
-
-They appear in:
-
-```
-C:\Users\user\Documents\Capstone-UA-FMS\launchers\dist\
-```
-
-Files:
-- `UA-FMS-Admin-Portal.exe`
-- `UA-FMS-College-Portal.exe`
-- `UA-FMS-Org-Portal.exe`
-
-## 11. Run the app via launchers
-
-Make sure:
-- XAMPP MySQL is running.
-- `php artisan serve` is running.
-- `npm run dev` is running.
-
-Then double‑click the launcher you want.
-
-### 11.1 Admin Launcher
-
-File: `UA-FMS-Admin-Portal.exe`
-
-It asks for an Admin access key. Use:
-
-```
-UA-ADMIN-2025
-```
-
-(From `FMS_ADMIN_SECRET` in .env.)
-
-If correct, it opens an embedded window to:
-
-```
-http://127.0.0.1:8000/fms-portal-entry?access_token=UA-FMS-ACCESS-2025&role=admin
-```
-
-Log in:
-- Email: `admin@example.com`
-- Password: `password123`
-
-### 11.2 College Staff Launcher
-
-File: `UA-FMS-College-Portal.exe`
-
-Access key:
-```
-UA-COLLEGE-2025
-```
-
-(From `FMS_COLLEGE_SECRET`.)
-
-Then log in:
-- Email: `college@example.com`
-- Password: `password123`
-
-### 11.3 Organization Staff Launcher
-
-File: `UA-FMS-Org-Portal.exe`
-
-Access key:
-```
-UA-ORG-2025
-```
-
-(From `FMS_ORG_SECRET`.)
-
-Then log in:
-- Email: `org@example.com`
-- Password: `password123`
-
-**Note:** Launcher keys are not the same as passwords.
-- Keys unlock the launcher;
-- Passwords log into the portal.
-
-## 12. Quick reference: keys & accounts
-
-### 12.1 Launcher keys (from .env)
-
-```env
-FMS_ACCESS_TOKEN=UA-FMS-ACCESS-2025
-
-FMS_ADMIN_SECRET=UA-ADMIN-2025
-FMS_COLLEGE_SECRET=UA-COLLEGE-2025
-FMS_ORG_SECRET=UA-ORG-2025
-
-FMS_LOGIN_URL=http://127.0.0.1:8000/fms-portal-entry
-```
-
-Used as:
-
-**Portal URL pattern (built by launcher):**
-
-```
-{FMS_LOGIN_URL}?access_token={FMS_ACCESS_TOKEN}&role={ROLE}
-```
-
-**Role/launcher gate keys:**
-- Admin launcher: `FMS_ADMIN_SECRET`
-- College launcher: `FMS_COLLEGE_SECRET`
-- Org launcher: `FMS_ORG_SECRET`
-
-### 12.2 Portal login users (from helper routes)
-
-After hitting `/make-*` URLs:
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@example.com | password123 |
-| College staff | college@example.com | password123 |
-| Org staff | org@example.com | password123 |
+If you still need to support the older desktop launcher flow, those instructions and source files are retained in `legacy/` and in the legacy `launchers/` directory, but they are not required for standard deployment.
 
 ## 13. One‑page checklist
 
@@ -421,14 +247,9 @@ On a new device:
    php artisan serve --host=127.0.0.1 --port=8000
    npm run dev
    ```
-8. In browser, visit:
-   - `/make-admin`
-   - `/make-college-staff`
-   - `/make-org-staff`
-9. Build launchers:
-   ```bash
-   cd dump
-   build_launchers.bat
-   ```
-10. Run the desired launcher .exe, enter the right key, then log in with the matching email/password.
+8. In browser, create or seed your test users as needed and then log in through the standard portal.
+   - Admin: use the admin login page
+   - College staff: use the college staff login page
+   - Org staff: use the org staff login page
+9. (Optional) If you are maintaining any legacy launcher flow, refer to `legacy/LAUNCHER_README.md` instead of using `/make-*` helper routes.
 

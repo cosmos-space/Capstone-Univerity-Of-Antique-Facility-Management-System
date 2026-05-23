@@ -18,6 +18,7 @@ class BookingController extends Controller
     public function calendar(Request $request)
     {
         $user = Auth::user();
+        $collegeId = $user->college_id;
         $collegeName = $user->college_name;
 
         $month = $request->query('month');
@@ -29,7 +30,7 @@ class BookingController extends Controller
         $end = $current->copy()->endOfMonth();
 
         $collegeFacilityIds = Facility::where('owner_type', 'college')
-            ->where('owner_college', $collegeName)
+            ->ownedByCollege($collegeId, $collegeName)
             ->pluck('id')
             ->all();
 

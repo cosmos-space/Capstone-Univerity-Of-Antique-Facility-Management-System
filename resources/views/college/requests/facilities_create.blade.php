@@ -68,6 +68,35 @@
             </select>
         </div>
 
+        {{-- Noted by (Dean / Program Head / Custom) --}}
+        <div>
+            <h2 class="text-sm font-semibold text-gray-700 mb-2">Noted by</h2>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Select signatory</label>
+            <select name="noted_signatory_id"
+                    id="noted_signatory_id"
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
+                <option value="custom">Custom name (type below)</option>
+                @foreach($deans as $s)
+                    <option value="dean:{{ $s->id }}" {{ old('noted_signatory_id') == "dean:{$s->id}" ? 'selected' : '' }}>
+                        Dean – {{ $s->name }} ({{ $s->unit }})
+                    </option>
+                @endforeach
+                @foreach($programHeads as $s)
+                    <option value="program_head:{{ $s->id }}" {{ old('noted_signatory_id') == "program_head:{$s->id}" ? 'selected' : '' }}>
+                        Program Head – {{ $s->name }} ({{ $s->unit }})
+                    </option>
+                @endforeach
+            </select>
+
+            <div class="mt-3 hidden" id="custom-noted-input">
+                <label class="block text-sm font-medium text-gray-700">Custom name</label>
+                <input type="text" name="noted_signatory_custom"
+                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+                       placeholder="Enter specific name"
+                       value="{{ old('noted_signatory_custom') }}">
+            </div>
+        </div>
+
         {{-- Purpose --}}
         <div>
             <label for="purpose" class="block text-sm font-medium text-gray-700">Purpose</label>
@@ -133,5 +162,25 @@ function adjustQty(fieldId, delta) {
     if (value < 0) value = 0;
     input.value = value;
 }
+
+(function() {
+    const notedSelect = document.getElementById('noted_signatory_id');
+    const customInput = document.getElementById('custom-noted-input');
+
+    function updateNotedUI() {
+        if (!notedSelect) return;
+        const val = notedSelect.value;
+        if (val === 'custom') {
+            customInput.classList.remove('hidden');
+        } else {
+            customInput.classList.add('hidden');
+        }
+    }
+
+    if (notedSelect) {
+        notedSelect.addEventListener('change', updateNotedUI);
+        updateNotedUI();
+    }
+})();
 </script>
 @endsection

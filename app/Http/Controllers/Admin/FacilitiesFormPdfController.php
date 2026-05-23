@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Facility;
 use App\Models\FormSubmission;
-use Illuminate\Http\Request;
+use App\Models\Signatory;
+
 use PhpOffice\PhpWord\TemplateProcessor;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -19,9 +20,10 @@ class FacilitiesFormPdfController extends Controller
      */
     public function generate(FormSubmission $submission): BinaryFileResponse
     {
-        if ($submission->type !== 'facilities_utilization' || $submission->status !== 'approved') {
+        if ($submission->type !== 'facilities_utilization' || ! in_array($submission->status, ['approved', 'converted'], true)) {
             abort(404);
         }
+
 
         $payload = $submission->payload ?? [];
         $facility = null;
@@ -43,6 +45,14 @@ class FacilitiesFormPdfController extends Controller
         $purpose        = $payload['purpose'] ?? '';
 
         $equipment = $payload['equipment'] ?? [];
+
+        $notedName = $payload['noted_signatory_name'] ?? '';
+        $notedDatetime = $payload['noted_datetime'] ?? '';
+        $approvedName = $payload['approved_head_name'] ?? 'GSU ORG HEAD';
+        $approvedDatetime = $payload['approved_datetime'] ?? '';
+
+
+
 
         // Map facility names to template checkbox placeholders.
         $facilityToKeyMap = [
@@ -146,11 +156,12 @@ class FacilitiesFormPdfController extends Controller
         $template->setValue('req_name',           $requesterName);
         $template->setValue('req_datetime',       now()->format('F d, Y  h:i A'));
         $template->setValue('noted_signature',    '');
-        $template->setValue('noted_name',         '');
-        $template->setValue('noted_datetime',     '');
+        $template->setValue('noted_name',         $notedName);
+        $template->setValue('noted_datetime',     $notedDatetime);
         $template->setValue('approved_signature', '');
-        $template->setValue('approved_name',      '');
-        $template->setValue('approved_datetime',  '');
+        $template->setValue('approved_name',      $approvedName);
+        $template->setValue('approved_datetime',  $approvedDatetime);
+
 
         // Save DOCX to temp path
         $docxPath = tempnam(sys_get_temp_dir(), 'facilities_') . '.docx';

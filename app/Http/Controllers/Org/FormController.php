@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Facility;
 use App\Models\FormSubmission;
 use App\Models\Notification;
+use App\Models\Signatory;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,7 +32,25 @@ class FormController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('org.requests.facilities_create', compact('gsuFacilities', 'orgFacilities', 'user'));
+        $presidents = Signatory::where('type', 'org_president')
+            ->where('unit', $user->organization_name)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        $advisers = Signatory::where('type', 'org_adviser')
+            ->where('unit', $user->organization_name)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('org.requests.facilities_create', compact(
+            'gsuFacilities',
+            'orgFacilities',
+            'user',
+            'presidents',
+            'advisers'
+        ));
     }
 
     /**
@@ -58,7 +77,40 @@ class FormController extends Controller
             'qty_led'       => 'nullable|integer|min:0',
 
             'venue_others'  => 'nullable|string|max:255',
+
+            'noted_signatory_id'     => 'required|string',
+            'noted_signatory_custom' => 'nullable|string|max:255',
         ]);
+
+        $notedName = null;
+        $raw = $request->input('noted_signatory_id');
+
+        if ($raw === 'custom') {
+            $request->validate([
+                'noted_signatory_custom' => 'required|string|max:255',
+            ]);
+            $notedName = $request->input('noted_signatory_custom');
+            $notedType = 'custom';
+        } else {
+            [$notedType, $idStr] = explode(':', $raw . ':');
+            $signatoryId = (int) $idStr;
+
+            if (! in_array($notedType, ['org_president', 'org_adviser'], true) || $signatoryId <= 0) {
+                return back()->withInput()->withErrors(['noted_signatory_id' => 'Please select a valid signatory.']);
+            }
+
+            $signatory = Signatory::where('id', $signatoryId)
+                ->where('type', $notedType)
+                ->where('unit', $user->organization_name)
+                ->where('is_active', true)
+                ->first();
+
+            if (! $signatory) {
+                return back()->withInput()->withErrors(['noted_signatory_id' => 'Please select a valid signatory.']);
+            }
+
+            $notedName = $signatory->name;
+        }
 
         // Build payload JSON (no contact number, no signature)
         $payload = [
@@ -83,6 +135,8 @@ class FormController extends Controller
                 'sound'          => (int) $request->input('qty_sound', 0),
                 'led'            => (int) $request->input('qty_led', 0),
             ],
+            'noted_signatory_type' => $notedType,
+            'noted_signatory_name' => $notedName,
         ];
 
         FormSubmission::create([

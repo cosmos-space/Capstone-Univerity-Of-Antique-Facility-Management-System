@@ -17,9 +17,9 @@
             <p class="text-xs text-neutral-600">Read-only view of your bookings and bookings for {{ $collegeName }} facilities.</p>
         </div>
         <div class="flex items-center gap-2 text-sm">
-            <a href="{{ route('college.bookings.index', ['month' => $prevMonth]) }}" class="fms-link">← Prev</a>
+            <a href="{{ route('college.calendar', ['month' => $prevMonth]) }}" class="fms-link">← Prev</a>
             <span class="text-neutral-600">{{ $monthLabel }}</span>
-            <a href="{{ route('college.bookings.index', ['month' => $nextMonth]) }}" class="fms-link">Next →</a>
+            <a href="{{ route('college.calendar', ['month' => $nextMonth]) }}" class="fms-link">Next →</a>
         </div>
     </div>
 
@@ -42,25 +42,32 @@
                     <tr class="border-t border-black">
                         @for ($col = 1; $col <= 7; $col++)
                             @php $cellCount++; @endphp
-                            <td class="align-top border-r border-black last:border-r-0 p-1 h-32">
-                                @if ($cellCount >= $firstWeekday && $dayCounter <= $daysInMonth)
-                                    @php
-                                        $dateObj = $currentMonth->copy()->day($dayCounter);
-                                        $dateKey = $dateObj->toDateString();
-                                        $dayBookings = $days[$dateKey] ?? [];
-                                    @endphp
+                            @php
+                                $displayDay = $cellCount >= $firstWeekday && $dayCounter <= $daysInMonth;
+                                $dayBookings = [];
+                                $hasBookings = false;
+
+                                if ($displayDay) {
+                                    $dateObj = $currentMonth->copy()->day($dayCounter);
+                                    $dateKey = $dateObj->toDateString();
+                                    $dayBookings = $days[$dateKey] ?? [];
+                                    $hasBookings = count($dayBookings) > 0;
+                                }
+                            @endphp
+                            <td class="align-top border-r border-black last:border-r-0 p-1 h-32 {{ $hasBookings ? 'bg-neutral-100' : '' }}">
+                                @if ($displayDay)
                                     <div class="flex items-center justify-between mb-1">
                                         <span class="text-[11px] font-semibold">{{ $dayCounter }}</span>
-                                        @if (count($dayBookings) > 0)
+                                        @if ($hasBookings)
                                             <span class="text-[10px] text-neutral-500">{{ count($dayBookings) }} booking{{ count($dayBookings) > 1 ? 's' : '' }}</span>
                                         @endif
                                     </div>
 
                                     @foreach ($dayBookings as $booking)
-                                        <div class="mb-1 border border-black px-1 py-0.5 bg-white">
-                                            <div class="text-[10px] font-semibold">{{ optional($booking->facility)->name ?? 'Unknown' }}</div>
-                                            <div class="text-[10px] text-neutral-600">{{ $booking->start_time->format('H:i') }}–{{ $booking->end_time->format('H:i') }}</div>
-                                            <div class="text-[10px] text-neutral-600">{{ \Illuminate\Support\Str::limit($booking->purpose ?? 'No purpose', 40) }}</div>
+                                        <div class="mb-1 border border-black px-1 py-0.5 bg-white text-[10px]">
+                                            <div class="font-semibold truncate">{{ optional($booking->facility)->name ?? 'Unknown facility' }}</div>
+                                            <div class="text-neutral-600">{{ $booking->start_time->format('H:i') }}–{{ $booking->end_time->format('H:i') }}</div>
+                                            <div class="text-neutral-600 truncate">{{ $booking->requester_unit ?? ucfirst($booking->requester_type) }}</div>
                                         </div>
                                     @endforeach
 

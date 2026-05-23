@@ -66,7 +66,27 @@
             <dt class="font-semibold text-gray-700">Purpose</dt>
             <dd class="text-gray-800">{{ $payload['purpose'] ?? '-' }}</dd>
         </div>
+
+        <div>
+            <dt class="font-semibold text-gray-700">Noted by (requester side)</dt>
+            <dd class="text-gray-800">
+                {{ $payload['noted_signatory_name'] ?? 'Not set' }}
+                @if(!empty($payload['noted_datetime']))
+                    <div class="text-xs text-gray-500">Date/time: {{ $payload['noted_datetime'] }}</div>
+                @endif
+            </dd>
+        </div>
+        <div>
+            <dt class="font-semibold text-gray-700">Head of Office (GSU)</dt>
+            <dd class="text-gray-800">
+                {{ $payload['approved_head_name'] ?? 'Not set' }}
+                @if(!empty($payload['approved_datetime']))
+                    <div class="text-xs text-gray-500">Date/time: {{ $payload['approved_datetime'] }}</div>
+                @endif
+            </dd>
+        </div>
     </dl>
+
 
     {{-- Equipment --}}
     @if(!empty($payload['equipment']))

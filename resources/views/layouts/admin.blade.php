@@ -30,18 +30,13 @@
                     ['label' => 'Monthly overview', 'route' => 'admin.overview'],
                 ],
             ],
-            [
-                'heading' => 'GSU forms (PDF)',
-                'links' => [
-                    ['label' => 'Facilities utilization form', 'route' => 'forms.facilities.show', 'routes' => 'forms.facilities.*'],
-                    ['label' => 'Repair & maintenance form', 'route' => 'forms.repair.show', 'routes' => 'forms.repair.*'],
-                ],
-            ], 
+
             [
                 'heading' => 'Administration',
                 'links' => [
                     ['label' => 'Users', 'route' => 'admin.users.index'],
                     ['label' => 'Create user', 'route' => 'admin.users.create'],
+                    ['label' => 'Signatories', 'route' => 'admin.signatories.index'],
                 ],
             ],
         ],

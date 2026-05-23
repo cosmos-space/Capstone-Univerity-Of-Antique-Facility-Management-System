@@ -5,8 +5,8 @@
     $monthLabel = $currentMonth->format('F Y');
     $prevMonth = $currentMonth->copy()->subMonth()->format('Y-m');
     $nextMonth = $currentMonth->copy()->addMonth()->format('Y-m');
-    $labels = array_keys($series);
-    $data = array_values($series);
+    $labels = array_keys($series);   // facility labels
+    $data   = array_values($series); // counts
 @endphp
 
 <div class="fms-card">
@@ -30,7 +30,7 @@
 <script>
     (function() {
         const labels = @json($labels);
-        const data = @json($data);
+        const data   = @json($data);
 
         const canvas = document.getElementById('fmsOverviewChart');
         if (!canvas) return;
@@ -42,10 +42,10 @@
         const paddingLeft = 40;
         const paddingRight = 20;
         const paddingTop = 20;
-        const paddingBottom = 40;
+        const paddingBottom = 60;
 
         const maxVal = Math.max(1, Math.max.apply(null, data));
-        const chartWidth = width - paddingLeft - paddingRight;
+        const chartWidth  = width - paddingLeft - paddingRight;
         const chartHeight = height - paddingTop - paddingBottom;
 
         ctx.clearRect(0, 0, width, height);
@@ -53,53 +53,48 @@
         ctx.fillStyle = '#000';
         ctx.strokeStyle = '#000';
 
+        // Y axis
         ctx.beginPath();
         ctx.moveTo(paddingLeft, paddingTop);
         ctx.lineTo(paddingLeft, height - paddingBottom);
         ctx.stroke();
 
+        // X axis
         ctx.beginPath();
         ctx.moveTo(paddingLeft, height - paddingBottom);
         ctx.lineTo(width - paddingRight, height - paddingBottom);
         ctx.stroke();
 
+        // Y ticks
         ctx.fillText('0', 8, height - paddingBottom + 12);
         ctx.fillText(String(maxVal), 8, paddingTop + 4);
 
         const n = labels.length;
-        const stepX = chartWidth / Math.max(1, n - 1);
-
-        labels.forEach((label, i) => {
-            const x = paddingLeft + i * stepX;
-            if (n <= 31 && (i === 0 || i === n - 1 || i % 5 === 0)) {
-                ctx.fillText(String(label), x - 6, height - paddingBottom + 16);
-            }
-        });
-
-        ctx.beginPath();
-        ctx.strokeStyle = '#2563eb';
-        ctx.lineWidth = 2;
+        const stepX = chartWidth / Math.max(1, n);
 
         data.forEach((val, i) => {
-            const x = paddingLeft + i * stepX;
-            const y = height - paddingBottom - (val / maxVal) * chartHeight;
+            const barWidth = stepX * 0.7;
+            const xCenter = paddingLeft + stepX * i + stepX / 2;
+            const x = xCenter - barWidth / 2;
 
-            if (i === 0) {
-                ctx.moveTo(x, y);
-            } else {
-                ctx.lineTo(x, y);
-            }
-        });
+            const barHeight = (val / maxVal) * chartHeight;
+            const y = height - paddingBottom - barHeight;
 
-        ctx.stroke();
-
-        data.forEach((val, i) => {
-            const x = paddingLeft + i * stepX;
-            const y = height - paddingBottom - (val / maxVal) * chartHeight;
-            ctx.beginPath();
-            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            // bar
             ctx.fillStyle = '#2563eb';
-            ctx.fill();
+            ctx.fillRect(x, y, barWidth, barHeight);
+
+            // x label rotated
+            const label = String(labels[i]);
+            ctx.save();
+            ctx.translate(xCenter, height - paddingBottom + 30);
+            ctx.rotate(-Math.PI / 4);
+            ctx.textAlign = 'right';
+            ctx.fillStyle = '#000';
+            const truncated = label.length > 18 ? label.slice(0, 17) + '…' : label;
+            ctx.fillText(truncated, 0, 0);
+            ctx.restore();
         });
     })();
 </script>
+

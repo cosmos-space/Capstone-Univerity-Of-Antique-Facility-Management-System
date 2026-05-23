@@ -13,6 +13,7 @@
                 'links' => [
                     ['label' => 'Dashboard', 'route' => 'college.dashboard'],
                     ['label' => 'Booking calendar', 'route' => 'college.calendar'],
+                    ['label' => 'Bookings', 'route' => 'college.bookings.index', 'routes' => 'college.bookings.*'],
                 ],
             ],
             [
@@ -20,12 +21,6 @@
                 'links' => [
                     ['label' => 'My facilities', 'route' => 'college.facilities.index'],
                     ['label' => 'Add facility', 'route' => 'college.facilities.create'],
-                ],
-            ],
-            [
-                'heading' => 'Bookings',
-                'links' => [
-                    ['label' => 'Bookings', 'route' => 'college.bookings.index', 'routes' => 'college.bookings.*'],
                 ],
             ],
             [ 

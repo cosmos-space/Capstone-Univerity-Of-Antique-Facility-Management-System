@@ -14,6 +14,7 @@ class Facility extends Model
         'location',
         'owner_type',
         'owner_college',
+        'college_id',
         'description',
         'is_active',
         'availability_status',
@@ -55,6 +56,36 @@ class Facility extends Model
     public function maintenanceTickets()
     {
         return $this->hasMany(MaintenanceTicket::class);
+    }
+
+    public function college()
+    {
+        return $this->belongsTo(College::class);
+    }
+
+    public function scopeOwnedByCollege($query, ?int $collegeId, ?string $collegeName)
+    {
+        return $query->where(function ($query) use ($collegeId, $collegeName) {
+            $hasCondition = false;
+
+            if ($collegeId) {
+                $query->where('college_id', $collegeId);
+                $hasCondition = true;
+            }
+
+            if ($collegeName) {
+                if ($hasCondition) {
+                    $query->orWhere('owner_college', $collegeName);
+                } else {
+                    $query->where('owner_college', $collegeName);
+                    $hasCondition = true;
+                }
+            }
+
+            if (! $hasCondition) {
+                $query->whereRaw('0 = 1');
+            }
+        });
     }
 }
  

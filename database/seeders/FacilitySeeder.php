@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\College;
 use App\Models\Facility;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -105,6 +106,12 @@ class FacilitySeeder extends Seeder
         ];
 
         foreach ($facilities as $data) {
+            $collegeId = null;
+
+            if (!empty($data['owner_college'])) {
+                $collegeId = College::where('name', $data['owner_college'])->value('id');
+            }
+
             Facility::updateOrCreate(
                 [
                     'name'          => $data['name'],
@@ -115,6 +122,7 @@ class FacilitySeeder extends Seeder
                     'location'    => $data['location'],
                     'description' => $data['description'],
                     'is_active'   => true,
+                    'college_id'  => $collegeId,
                 ]
             );
         }

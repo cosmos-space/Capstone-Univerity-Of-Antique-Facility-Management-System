@@ -78,7 +78,10 @@ class BookingController extends Controller
     }
 
     /**
-     * Monthly overview: simple line chart for approved/rescheduled bookings per day.
+     * Monthly overview: counts of successful bookings grouped by facility.
+     *
+     * X axis: facility names (categories)
+     * Y axis: count of approved + rescheduled bookings in the current month
      */
     public function overview(Request $request)
     {
@@ -90,27 +93,80 @@ class BookingController extends Controller
         $start = $current->copy()->startOfMonth();
         $end   = $current->copy()->endOfMonth();
 
-        $bookings = Booking::whereBetween('start_time', [$start, $end])
+        $bookings = Booking::with('facility')
+            ->whereBetween('start_time', [$start, $end])
             ->whereIn('status', ['approved', 'rescheduled'])
             ->get();
 
-        $days = [];
-        for ($d = 1; $d <= $current->daysInMonth; $d++) {
-            $days[$d] = 0;
-        }
+        // Core facility names we want separate
+        $coreNames = [
+            'BUSALAN HALL',
+            'AVR-USA HALL',
+            'E-HUB',
+            'BALAY NI JUAN',
+            'ICT AVR',
+            'CEA AVR',
+            'CBA AVR',
+            'NEW AVR',
+            'GRAND STAND',
+            'COVERED GYM',
+            'TRACK OVAL',
+        ];
+
+        $counts = [];
 
         foreach ($bookings as $booking) {
-            $day = (int) $booking->start_time->format('j');
-            if (isset($days[$day])) {
-                $days[$day]++;
+            $facility = $booking->facility;
+
+            if (! $facility) {
+                $key = 'Others';
+            } else {
+                $name = strtoupper(trim($facility->name ?? 'Unknown'));
+
+                if (in_array($name, $coreNames, true)) {
+                    $key = $name;
+                } elseif (($facility->owner_type ?? null) === 'college') {
+                    // Any college facility not in core list
+                    $key = 'Others (college-owned)';
+                } else {
+                    // Non-core facility that is not college-owned: lumped under Others
+                    $key = 'Others';
+                }
             }
+
+            if (! isset($counts[$key])) {
+                $counts[$key] = 0;
+            }
+            $counts[$key]++;
+        }
+
+        // Ensure consistent order: core first, then others buckets.
+        $orderedCounts = [];
+        foreach ($coreNames as $core) {
+            if (isset($counts[$core])) {
+                $orderedCounts[$core] = $counts[$core];
+            } else {
+                $orderedCounts[$core] = 0;
+            }
+        }
+        if (isset($counts['Others (college-owned)'])) {
+            $orderedCounts['Others (college-owned)'] = $counts['Others (college-owned)'];
+        }
+        if (isset($counts['Others'])) {
+            $orderedCounts['Others'] = $counts['Others'];
+        }
+
+        // Still return something to avoid JS errors.
+        if (empty($orderedCounts)) {
+            $orderedCounts = ['(No bookings)' => 0];
         }
 
         return view('admin.overview.index', [
             'currentMonth' => $current,
-            'series'       => $days,
+            'series'       => $orderedCounts, // [facilityLabel => count]
         ]);
     }
+
 
     /**
      * Admin reschedules / modifies an existing booking.

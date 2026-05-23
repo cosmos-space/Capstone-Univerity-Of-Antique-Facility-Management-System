@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Facility;
 use App\Models\FormSubmission;
 use App\Models\Notification;
+use App\Models\Signatory;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +19,8 @@ class FormController extends Controller
     public function createFacilities()
     { 
         $user = Auth::user();
+        $collegeId = $user->college_id;
+        $collegeName = $user->college_name;
 
         // GSU-managed facilities + this college's own facilities
         $gsuFacilities = Facility::where('owner_type', 'gsu')
@@ -26,12 +29,30 @@ class FormController extends Controller
             ->get();
 
         $collegeFacilities = Facility::where('owner_type', 'college')
-            ->where('owner_college', $user->college_name)
+            ->ownedByCollege($collegeId, $collegeName)
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
 
-        return view('college.requests.facilities_create', compact('gsuFacilities', 'collegeFacilities', 'user'));
+        $deans = Signatory::where('type', 'dean')
+            ->forCollege($collegeId, $collegeName)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        $programHeads = Signatory::where('type', 'program_head')
+            ->forCollege($collegeId, $collegeName)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('college.requests.facilities_create', compact(
+            'gsuFacilities',
+            'collegeFacilities',
+            'user',
+            'deans',
+            'programHeads'
+        ));
     }
 
     /**
@@ -58,7 +79,46 @@ class FormController extends Controller
             'qty_led'       => 'nullable|integer|min:0',
 
             'venue_others'  => 'nullable|string|max:255',
+
+            'noted_signatory_id'     => 'required|string',
+            'noted_signatory_custom' => 'nullable|string|max:255',
         ]);
+
+        $notedName = null;
+        $raw = $request->input('noted_signatory_id');
+
+        if ($raw === 'custom') {
+            $request->validate([
+                'noted_signatory_custom' => 'required|string|max:255',
+            ]);
+            $notedName = $request->input('noted_signatory_custom');
+            $notedType = 'custom';
+        } else {
+            [$notedType, $idStr] = explode(':', $raw . ':');
+            $signatoryId = (int) $idStr;
+
+            if (! in_array($notedType, ['dean', 'program_head'], true) || $signatoryId <= 0) {
+                return back()->withInput()->withErrors(['noted_signatory_id' => 'Please select a valid signatory.']);
+            }
+
+            $signatory = Signatory::where('id', $signatoryId)
+                ->where('type', $notedType)
+                ->where(function ($query) use ($user) {
+                    if ($user->college_id) {
+                        $query->where('college_id', $user->college_id);
+                    }
+
+                    $query->orWhere('unit', $user->college_name);
+                })
+                ->where('is_active', true)
+                ->first();
+
+            if (! $signatory) {
+                return back()->withInput()->withErrors(['noted_signatory_id' => 'Please select a valid signatory.']);
+            }
+
+            $notedName = $signatory->name;
+        }
 
         // Build payload JSON (no contact number, no signature)
         $payload = [
@@ -83,6 +143,8 @@ class FormController extends Controller
                 'sound'          => (int) $request->input('qty_sound', 0),
                 'led'            => (int) $request->input('qty_led', 0),
             ],
+            'noted_signatory_type' => $notedType,
+            'noted_signatory_name' => $notedName,
         ];
 
         FormSubmission::create([

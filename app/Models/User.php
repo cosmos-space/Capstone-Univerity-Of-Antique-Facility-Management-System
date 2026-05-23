@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
         'role',
         'college_name',
+        'college_id',
         'organization_name',
     ];
 
@@ -72,6 +73,11 @@ class User extends Authenticatable
     public function notifications()
     {
         return $this->hasMany(Notification::class);
+    }
+
+    public function college()
+    {
+        return $this->belongsTo(College::class);
     }
 }
   
