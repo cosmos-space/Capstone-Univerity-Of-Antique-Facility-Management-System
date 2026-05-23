@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Facility;
+use App\Policies\FacilityPolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 
@@ -20,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Facility::class, FacilityPolicy::class);
+
         View::composer('*', function ($view) {
             $user = auth()->user();
             $unreadNotificationsCount = 0;

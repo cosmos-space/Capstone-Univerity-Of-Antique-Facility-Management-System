@@ -2,21 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Traits\ConvertsToPdf;
+use App\Models\FormControl;
 use Illuminate\Http\Request;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class GsuFormController extends Controller
 {
-    // ─────────────────────────────────────────────
-    //  FACILITIES AND UTILIZATION FORM
-    // ─────────────────────────────────────────────
+    use ConvertsToPdf;
+
+    // ----- FACILITIES AND UTILIZATION FORM -----
 
     public function showFacilities()
     {
         return view('forms.facilities');
     }
- 
+
     public function downloadFacilities(Request $request): BinaryFileResponse
     {
         $request->validate([
@@ -28,8 +30,6 @@ class GsuFormController extends Controller
             'purpose'           => 'required|string|max:500',
         ]);
 
-        // Map checkbox names to their printable labels in the DOCX
-        // These match the seeded facilities in FacilitySeeder
         $venueLabels = [
             'busalan_hall'   => 'BUSALAN HALL',
             'avr_usa_hall'   => 'AVR-USA HALL',
@@ -42,7 +42,6 @@ class GsuFormController extends Controller
             'grand_stand'    => 'GRAND STAND',
             'covered_gym'    => 'COVERED GYM',
             'track_oval'     => 'TRACK OVAL',
-            // other_venue is handled via venue_others free-text field
         ];
         $selectedVenues = [];
         foreach ($venueLabels as $key => $label) {
@@ -62,7 +61,6 @@ class GsuFormController extends Controller
 
         $template = new TemplateProcessor($templatePath);
 
-        // Auto-generate control number if not provided
         $controlNo = $request->input('control_no', $this->generateControlNumber('facilities'));
 
         $template->setValue('control_no',        $controlNo);
@@ -75,7 +73,6 @@ class GsuFormController extends Controller
         $template->setValue('venues_selected',   implode(', ', $selectedVenues));
         $template->setValue('venue_others',      $request->input('venue_others', ''));
 
-        // Facilities / equipment quantities
         $template->setValue('qty_monobloc',      $request->input('qty_monobloc', ''));
         $template->setValue('qty_table',         $request->input('qty_table', ''));
         $template->setValue('qty_fan',           $request->input('qty_fan', ''));
@@ -84,7 +81,6 @@ class GsuFormController extends Controller
         $template->setValue('qty_sound',         $request->input('qty_sound', ''));
         $template->setValue('qty_led',           $request->input('qty_led', ''));
 
-        // Signature blocks – name + datetime (signatures are left blank for manual signing)
         $template->setValue('req_signature',      '');
         $template->setValue('req_name',           $request->input('req_name', $request->input('requester_name')));
         $template->setValue('req_datetime',       now()->format('F d, Y  h:i A'));
@@ -101,9 +97,7 @@ class GsuFormController extends Controller
         return $this->convertAndDownload($docxPath, 'Facilities-Utilization-Form');
     }
 
-    // ─────────────────────────────────────────────
-    //  REPAIR AND MAINTENANCE FORM
-    // ─────────────────────────────────────────────
+    // ----- REPAIR AND MAINTENANCE FORM -----
 
     public function showRepair()
     {
@@ -128,7 +122,6 @@ class GsuFormController extends Controller
             storage_path('app/templates/REPAIR-AND-MAINTENANCE-FORM-TEMPLATE.docx')
         );
 
-        // Auto-generate control number if not provided
         $controlNo = $request->input('control_no', $this->generateControlNumber('repair'));
 
         $template->setValue('control_no',           $controlNo);
@@ -161,52 +154,17 @@ class GsuFormController extends Controller
         return $this->convertAndDownload($docxPath, 'Repair-Maintenance-Form');
     }
 
-    // ─────────────────────────────────────────────
-    //  SHARED: DOCX → PDF via LibreOffice
-    // ─────────────────────────────────────────────
-
-    private function convertAndDownload(string $docxPath, string $baseName): BinaryFileResponse
-    {
-        $outDir  = sys_get_temp_dir();
-        $pdfPath = $outDir . '/' . pathinfo($docxPath, PATHINFO_FILENAME) . '.pdf';
-
-        // Convert with LibreOffice headless
-        $cmd = sprintf(
-            'soffice --headless --convert-to pdf --outdir %s %s 2>&1',
-            escapeshellarg($outDir),
-            escapeshellarg($docxPath)
-        );
-        exec($cmd, $output, $exitCode);
-
-        // Clean up the temp docx
-        @unlink($docxPath);
-
-        if ($exitCode !== 0 || ! file_exists($pdfPath)) {
-            // Fallback: return the filled docx if PDF conversion fails
-            return response()->download($docxPath, $baseName . '.docx')->deleteFileAfterSend(true);
-        }
-
-        return response()
-            ->download($pdfPath, $baseName . '.pdf', ['Content-Type' => 'application/pdf'])
-            ->deleteFileAfterSend(true);
-    }
-
-    // ─────────────────────────────────────────────
-    //  HELPER: Generate Control Number
-    // ─────────────────────────────────────────────
+    // ----- HELPER: Generate Control Number -----
 
     private function generateControlNumber(string $formType): string
     {
-        // Format: GSU-YYYYMMDD-XXXX (where XXXX is a sequential number)
         $datePart = now()->format('Ymd');
-        
-        // Get the last control number for today or start from 0001
-        $lastControlNo = optional(\App\Models\FormControl::whereDate('created_at', today())
+
+        $lastControlNo = optional(FormControl::whereDate('created_at', today())
             ->orderBy('id', 'desc')
             ->first())->control_number;
 
         if ($lastControlNo && str_starts_with($lastControlNo, 'GSU-' . $datePart)) {
-            // Extract and increment the sequence number
             $lastSeq = (int) substr($lastControlNo, -4);
             $newSeq = str_pad($lastSeq + 1, 4, '0', STR_PAD_LEFT);
         } else {
@@ -215,8 +173,7 @@ class GsuFormController extends Controller
 
         $newControlNo = 'GSU-' . $datePart . '-' . $newSeq;
 
-        // Store this control number in the database
-        \App\Models\FormControl::create([
+        FormControl::create([
             'control_number' => $newControlNo,
             'form_type' => $formType,
         ]);

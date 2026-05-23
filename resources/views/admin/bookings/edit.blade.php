@@ -63,7 +63,7 @@
                 $currentStart = $booking->start_time ? $booking->start_time->format('H:i') : '08:00';
                 $currentEnd   = $booking->end_time ? $booking->end_time->format('H:i') : '17:00';
 
-                $details = $booking->additional_details ? json_decode($booking->additional_details, true) : [];
+                $details = $booking->additional_details ?? [];
                 $equip   = $details['equipment'] ?? [];
             @endphp
             <div>

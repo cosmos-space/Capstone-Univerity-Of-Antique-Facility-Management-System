@@ -3,23 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Traits\ConvertsToPdf;
 use App\Models\Facility;
 use App\Models\FormSubmission;
-use Illuminate\Http\Request;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class FacilitiesFormPdfController extends Controller
 {
-    /**
-     * Generate a Facilities and Utilization Form PDF from an approved FormSubmission.
-     *
-     * This uses the same DOCX template approach as GsuFormController,
-     * but fills values from the JSON payload instead of form inputs.
-     */
+    use ConvertsToPdf;
+
     public function generate(FormSubmission $submission): BinaryFileResponse
     {
-        if ($submission->type !== 'facilities_utilization' || $submission->status !== 'approved') {
+        if (!$submission->isFacilitiesUtilization() || !$submission->isApproved()) {
             abort(404);
         }
 
@@ -30,7 +26,6 @@ class FacilitiesFormPdfController extends Controller
             $facility = Facility::find($payload['facility_id']);
         }
 
-        // Map payload to template placeholders
         $controlNo      = $payload['control_no']    ?? '';
         $dateRequest    = $payload['date_request']  ?? now()->toDateString();
         $requesterName  = $payload['requester_name'] ?? ($submission->requester->name ?? '');
@@ -41,10 +36,8 @@ class FacilitiesFormPdfController extends Controller
             $timeActivity = $timeRange['start'].' - '.$timeRange['end'];
         }
         $purpose        = $payload['purpose'] ?? '';
-
         $equipment = $payload['equipment'] ?? [];
 
-        // Map facility names to template checkbox placeholders.
         $facilityToKeyMap = [
             'BUSALAN HALL' => 'busalan_hall',
             'AVR-USA HALL' => 'paghiusa_hall',
@@ -59,7 +52,7 @@ class FacilitiesFormPdfController extends Controller
             'TRACK OVAL'   => 'track_oval',
         ];
 
-        $checked = '✔';
+        $checked = "\u{2714}";
         $unchecked = '';
 
         $venueCheckboxes = [
@@ -94,7 +87,6 @@ class FacilitiesFormPdfController extends Controller
             $venueOthersText = $payload['venue_others'];
         }
 
-        // Load the DOCX template (support app/templates and storage/app/templates)
         $templatePath = base_path('app/templates/FACILITIES-AND-UTILIZATION-FORM-TEMPLATE.docx');
         if (!file_exists($templatePath)) {
             $templatePath = storage_path('app/templates/FACILITIES-AND-UTILIZATION-FORM-TEMPLATE.docx');
@@ -106,17 +98,14 @@ class FacilitiesFormPdfController extends Controller
 
         $template = new TemplateProcessor($templatePath);
 
-        // Set values
         $template->setValue('control_no',       $controlNo);
         $template->setValue('date_request',     $dateRequest);
         $template->setValue('requester_name',   $requesterName);
-        // Contact is not part of the digital form; leave blank
         $template->setValue('requester_contact',$payload['requester_contact'] ?? '');
         $template->setValue('date_activity',    $dateActivity);
         $template->setValue('time_activity',    $timeActivity);
         $template->setValue('purpose',          $purpose);
 
-        // Venue checkbox values
         $template->setValue('busalian_hall', $venueCheckboxes['busalian_hall'] ?? '');
         $template->setValue('paghiusa_hall', $venueCheckboxes['paghiusa_hall'] ?? '');
         $template->setValue('ehub',          $venueCheckboxes['ehub'] ?? '');
@@ -131,7 +120,6 @@ class FacilitiesFormPdfController extends Controller
         $template->setValue('others',        $venueCheckboxes['others'] ?? '');
         $template->setValue('venue_others',  $venueOthersText);
 
-        // Equipment quantities (align with FORMREADME placeholders)
         $template->setValue('qty_monobloc', $equipment['monobloc_chair'] ?? '');
         $template->setValue('qty_table',    $equipment['table'] ?? '');
         $template->setValue('qty_fan',      $equipment['electric_fan'] ?? '');
@@ -140,8 +128,6 @@ class FacilitiesFormPdfController extends Controller
         $template->setValue('qty_sound',    $equipment['sound'] ?? '');
         $template->setValue('qty_led',      $equipment['led'] ?? '');
 
-        // Signature blocks – as per your requirement, leave signatures blank;
-        // set req_name and req_datetime from system.
         $template->setValue('req_signature',      '');
         $template->setValue('req_name',           $requesterName);
         $template->setValue('req_datetime',       now()->format('F d, Y  h:i A'));
@@ -152,42 +138,9 @@ class FacilitiesFormPdfController extends Controller
         $template->setValue('approved_name',      '');
         $template->setValue('approved_datetime',  '');
 
-        // Save DOCX to temp path
         $docxPath = tempnam(sys_get_temp_dir(), 'facilities_') . '.docx';
         $template->saveAs($docxPath);
 
-        // Convert to PDF using LibreOffice, like in GsuFormController
         return $this->convertAndDownload($docxPath, 'Facilities-Utilization-Form-'.$submission->id);
-    }
-
-    /**
-     * DOCX → PDF via LibreOffice (shared with GsuFormController behavior).
-     */
-    private function convertAndDownload(string $docxPath, string $baseName): BinaryFileResponse
-    {
-        $outDir  = sys_get_temp_dir();
-        $pdfPath = $outDir . '/' . pathinfo($docxPath, PATHINFO_FILENAME) . '.pdf';
-
-        // Convert with LibreOffice headless
-        $cmd = sprintf(
-            'soffice --headless --convert-to pdf --outdir %s %s 2>&1',
-            escapeshellarg($outDir),
-            escapeshellarg($docxPath)
-        );
-        exec($cmd, $output, $exitCode);
-
-        if ($exitCode !== 0 || !file_exists($pdfPath)) {
-            // Fallback: return the filled DOCX if PDF conversion fails
-            return response()
-                ->download($docxPath, $baseName . '.docx')
-                ->deleteFileAfterSend(true);
-        }
-
-        // Remove the temp DOCX file
-        @unlink($docxPath);
-
-        return response()
-            ->download($pdfPath, $baseName . '.pdf', ['Content-Type' => 'application/pdf'])
-            ->deleteFileAfterSend(true);
     }
 }

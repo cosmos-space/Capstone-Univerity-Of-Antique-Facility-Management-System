@@ -6,12 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Facility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class FacilityController extends Controller
 {
-    /**
-     * Display a listing of facilities owned by the college.
-     */
     public function index()
     {
         $collegeName = Auth::user()->college_name;
@@ -22,19 +20,13 @@ class FacilityController extends Controller
 
         return view('college.facilities.index', compact('facilities', 'collegeName'));
     }
- 
-    /**
-     * Show the form for creating a new facility.
-     */
+
     public function create()
     {
         $collegeName = Auth::user()->college_name;
         return view('college.facilities.create', compact('collegeName'));
     }
 
-    /**
-     * Store a newly created facility in storage.
-     */
     public function store(Request $request)
     {
         $collegeName = Auth::user()->college_name;
@@ -49,9 +41,6 @@ class FacilityController extends Controller
 
         $validated['owner_type'] = 'college';
         $validated['owner_college'] = $collegeName;
-
-        // New facilities from colleges must be verified by GSU:
-        // start as inactive and unavailable until an admin approves.
         $validated['is_active'] = false;
         $validated['availability_status'] = 'unavailable';
 
@@ -61,29 +50,17 @@ class FacilityController extends Controller
             ->with('status', 'Facility created successfully.');
     }
 
-    /**
-     * Show the form for editing the specified facility.
-     */
     public function edit(Facility $facility)
     {
-        // Ensure the facility belongs to the user's college
-        if ($facility->owner_type !== 'college' || $facility->owner_college !== Auth::user()->college_name) {
-            abort(403, 'Unauthorized access.');
-        }
+        Gate::authorize('manageCollegeFacility', $facility);
 
         $collegeName = Auth::user()->college_name;
         return view('college.facilities.edit', compact('facility', 'collegeName'));
     }
 
-    /**
-     * Update the specified facility in storage.
-     */
     public function update(Request $request, Facility $facility)
     {
-        // Ensure the facility belongs to the user's college
-        if ($facility->owner_type !== 'college' || $facility->owner_college !== Auth::user()->college_name) {
-            abort(403, 'Unauthorized access.');
-        }
+        Gate::authorize('manageCollegeFacility', $facility);
 
         $validated = $request->validate([
             'name'                => 'required|string|max:255',
@@ -99,15 +76,9 @@ class FacilityController extends Controller
             ->with('status', 'Facility updated successfully.');
     }
 
-    /**
-     * Remove the specified facility from storage.
-     */
     public function destroy(Facility $facility)
     {
-        // Ensure the facility belongs to the user's college
-        if ($facility->owner_type !== 'college' || $facility->owner_college !== Auth::user()->college_name) {
-            abort(403, 'Unauthorized access.');
-        }
+        Gate::authorize('manageCollegeFacility', $facility);
 
         $facility->delete();
 
