@@ -48,6 +48,18 @@ class Facility extends Model
         return in_array($this->name, $coreNames, true);
     }
 
+    public function isAvailable(): bool
+    {
+        return $this->is_active
+            && !in_array($this->availability_status, ['unavailable', 'maintenance'], true);
+    }
+
+    public function isOwnedByCollege(string $collegeName): bool
+    {
+        return $this->owner_type === 'college'
+            && $this->owner_college === $collegeName;
+    }
+
     public function bookings()
     {
         return $this->hasMany(Booking::class);

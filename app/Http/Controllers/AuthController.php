@@ -4,21 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
 class AuthController extends Controller
 {
     public function showLogin()
     {
         if (Auth::check()) {
-            $user = Auth::user();
-
-            return match ($user->role) {
-                'admin' => redirect()->route('admin.dashboard'),
-                'college_staff' => redirect()->route('college.dashboard'),
-                'org_staff' => redirect()->route('org.dashboard'),
-                default => redirect()->route('home'),
-            };
+            return $this->redirectByRole(Auth::user());
         }
 
         return view('auth.login');
@@ -50,16 +42,9 @@ class AuthController extends Controller
         }
 
         app('cache')->forget($key);
-
         $request->session()->regenerate();
-        $user = Auth::user();
 
-        return match ($user->role) {
-            'admin' => redirect()->route('admin.dashboard'),
-            'college_staff' => redirect()->route('college.dashboard'),
-            'org_staff' => redirect()->route('org.dashboard'),
-            default => redirect()->route('home'),
-        };
+        return $this->redirectByRole(Auth::user());
     }
 
     public function logout(Request $request)
@@ -70,5 +55,21 @@ class AuthController extends Controller
 
         return redirect()->route('home');
     }
+
+    protected function redirectByRole($user)
+    {
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        if ($user->isCollegeStaff()) {
+            return redirect()->route('college.dashboard');
+        }
+
+        if ($user->isOrgStaff()) {
+            return redirect()->route('org.dashboard');
+        }
+
+        return redirect()->route('home');
+    }
 }
- 
