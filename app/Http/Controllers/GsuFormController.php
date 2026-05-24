@@ -31,8 +31,8 @@ class GsuFormController extends Controller
         ]);
 
         $venueLabels = [
-            'busalan_hall'   => 'BUSALAN HALL',
-            'avr_usa_hall'   => 'AVR-USA HALL',
+            'busalian_hall'  => 'BUSALIAN HALL',
+            'paghiusa_hall'  => 'PAGHIUSA HALL',
             'e_hub'          => 'E-HUB',
             'balay_ni_juan'  => 'BALAY NI JUAN',
             'ict_avr'        => 'ICT AVR',

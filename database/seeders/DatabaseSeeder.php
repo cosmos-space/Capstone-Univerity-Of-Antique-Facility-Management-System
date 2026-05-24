@@ -38,4 +38,3 @@ class DatabaseSeeder extends Seeder
         $this->call(SampleUsersSeeder::class);
     }
 }
-  

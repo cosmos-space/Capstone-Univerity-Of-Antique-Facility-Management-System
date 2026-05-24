@@ -54,22 +54,19 @@
                                     $hasBookings = count($dayBookings) > 0;
                                 }
                             @endphp
-                            <td class="align-top border-r border-black last:border-r-0 p-1 h-32 {{ $hasBookings ? 'bg-neutral-100' : '' }}">
+                            <td class="align-top border-r border-black last:border-r-0 p-1 h-24 w-[110px] {{ $hasBookings ? 'bg-neutral-100' : '' }}">
                                 @if ($displayDay)
-                                    <div class="flex items-center justify-between mb-1">
-                                        <span class="text-[11px] font-semibold">{{ $dayCounter }}</span>
+                                    <div class="flex flex-col items-center justify-center h-full">
+                                        <span class="text-[11px] font-semibold mb-0.5">{{ $dayCounter }}</span>
                                         @if ($hasBookings)
-                                            <span class="text-[10px] text-neutral-500">{{ count($dayBookings) }} booking{{ count($dayBookings) > 1 ? 's' : '' }}</span>
+                                            <a
+                                                href="{{ route('admin.calendar', ['month' => $currentMonth->format('Y-m'), 'day' => $dayCounter]) }}"
+                                                class="text-[10px] text-neutral-700"
+                                            >
+                                                {{ count($dayBookings) }} booking{{ count($dayBookings) > 1 ? 's' : '' }}
+                                            </a>
                                         @endif
                                     </div>
-
-                                    @foreach ($dayBookings as $booking)
-                                        <div class="mb-1 border border-black px-1 py-0.5 bg-white text-[10px]">
-                                            <div class="font-semibold truncate">{{ optional($booking->facility)->name ?? 'Unknown facility' }}</div>
-                                            <div class="text-neutral-600">{{ $booking->start_time->format('H:i') }}–{{ $booking->end_time->format('H:i') }}</div>
-                                            <div class="text-neutral-600 truncate">{{ $booking->requester_unit ?? ucfirst($booking->requester_type) }}</div>
-                                        </div>
-                                    @endforeach
 
                                     @php $dayCounter++; @endphp
                                 @endif
@@ -80,6 +77,49 @@
             </tbody>
         </table>
     </div>
+
+  @if(!empty($selectedDate) && $selectedDateBookings->isNotEmpty())
+        @php
+            $dateLabel = $selectedDate->format('F d, Y');
+        @endphp
+        <h2 class="mb-2 text-sm font-semibold uppercase tracking-widest text-neutral-500">
+            Bookings on {{ $dateLabel }}
+        </h2>
+        <div class="fms-table-wrap mb-6">
+            <table class="fms-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Facilities</th>
+                        <th>Requester</th>
+                        <th>Purpose</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($selectedDateBookings as $booking)
+                        @php
+                            $facilityNames = $booking->facilities->pluck('name')->join(', ');
+                        @endphp
+                        <tr>
+                            <td>
+                                {{ $booking->start_time->format('H:i') }} – {{ $booking->end_time->format('H:i') }}
+                            </td>
+                            <td>{{ $facilityNames !== '' ? $facilityNames : 'Unknown facility' }}</td>
+                            <td>
+                                {{ optional($booking->requester)->name ?? 'Unknown' }}<br>
+                                <span class="text-xs text-neutral-500">
+                                    {{ $booking->requester_unit ?? ucfirst($booking->requester_type) }}
+                                </span>
+                            </td>
+                            <td>{{ \Illuminate\Support\Str::limit($booking->purpose ?? '-', 80) }}</td>
+                            <td><span class="fms-badge">{{ ucfirst($booking->status) }}</span></td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endif
 
     <h2 class="mb-2 text-sm font-semibold uppercase tracking-widest text-neutral-500">Facility booking overview ({{ $monthLabel }})</h2>
 

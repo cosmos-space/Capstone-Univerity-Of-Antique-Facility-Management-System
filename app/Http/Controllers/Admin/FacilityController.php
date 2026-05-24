@@ -41,8 +41,9 @@ class FacilityController extends Controller
         }
 
         if ($facility->owner_type === 'college') {
-            unset($validated['availability_status']);
+            unset($validated['owner_type'], $validated['owner_college'], $validated['availability_status']);
         }
+
 
         $facility->update($validated);
 

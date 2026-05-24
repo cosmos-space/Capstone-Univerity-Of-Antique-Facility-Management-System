@@ -7,17 +7,59 @@ use App\Models\Booking;
 use App\Models\Facility;
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use App\Services\BookingService;
 use Carbon\Carbon;
 
 class BookingController extends Controller
 {
+    public function __construct(
+        protected BookingService $bookingService
+    ) {}
+
     public function index()
     {
-        $bookings = Booking::with(['requester', 'facility'])
+        $bookings = Booking::with(['requester', 'facilities'])
+            ->whereIn('status', ['booked', 'rescheduled', 'cancelled'])
             ->orderByDesc('start_time')
             ->paginate(20);
 
         return view('admin.bookings.index', compact('bookings'));
+    }
+
+    public function createDirect()
+    {
+        $facilities = Facility::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.bookings.create_direct', compact('facilities'));
+    }
+
+    public function storeDirect(Request $request)
+    {
+        $data = $request->validate([
+            'facility_ids'   => 'required|array',
+            'facility_ids.*' => 'exists:facilities,id',
+            'date_activity' => 'required|date',
+            'start_time'    => 'required|date_format:H:i',
+            'end_time'      => 'required|date_format:H:i|after:start_time',
+            'purpose'       => 'required|string|max:500',
+            'requester_name' => 'required|string|max:255',
+
+            // Equipment (optional)
+            'qty_monobloc'  => 'nullable|integer|min:0',
+            'qty_table'     => 'nullable|integer|min:0',
+            'qty_fan'       => 'nullable|integer|min:0',
+            'qty_rostrum'   => 'nullable|integer|min:0',
+            'qty_flag'      => 'nullable|integer|min:0',
+            'qty_sound'     => 'nullable|integer|min:0',
+            'qty_led'       => 'nullable|integer|min:0',
+        ]);
+
+        $booking = $this->bookingService->createDirectBooking($data, auth()->id());
+
+        return redirect()->route('admin.bookings.index')
+            ->with('status', "High-priority booking created ({$booking->booking_code}). Conflicting bookings have been set to 'Pending'.");
     }
 
     public function edit(Booking $booking)
@@ -42,8 +84,9 @@ class BookingController extends Controller
         $start = $current->copy()->startOfMonth();
         $end   = $current->copy()->endOfMonth();
 
-        $bookings = Booking::with('facility')
+        $bookings = Booking::with(['facilities', 'requester'])
             ->whereBetween('start_time', [$start, $end])
+            ->whereIn('status', ['booked', 'rescheduled'])
             ->orderBy('start_time')
             ->get();
 
@@ -56,12 +99,24 @@ class BookingController extends Controller
             $days[$dayKey][] = $booking;
         }
 
+        // Optional: daily detail when ?day=DD is present
+        $selectedDate = null;
+        $selectedDateBookings = collect();
+        if ($request->filled('day')) {
+            $dayInt = (int) $request->query('day');
+            if ($dayInt >= 1 && $dayInt <= $current->daysInMonth) {
+                $selectedDate = $current->copy()->day($dayInt);
+                $key = $selectedDate->toDateString();
+                $selectedDateBookings = collect($days[$key] ?? [])->sortBy('start_time');
+            }
+        }
+
         $facilityCounts = Facility::orderBy('name')
             ->get()
             ->map(function ($facility) use ($start, $end) {
                 $count = $facility->bookings()
                     ->whereBetween('start_time', [$start, $end])
-                    ->whereIn('status', ['approved', 'rescheduled'])
+                    ->whereIn('status', ['booked', 'rescheduled'])
                     ->count();
 
                 return [
@@ -70,18 +125,20 @@ class BookingController extends Controller
                 ];
             });
 
-        return view('admin.calendar.index', [
-            'currentMonth'   => $current,
-            'days'           => $days,
-            'facilityCounts' => $facilityCounts,
+         return view('admin.calendar.index', [
+            'currentMonth'          => $current,
+            'days'                  => $days,
+            'facilityCounts'        => $facilityCounts,
+            'selectedDate'          => $selectedDate,
+            'selectedDateBookings'  => $selectedDateBookings,
         ]);
     }
 
     /**
-     * Monthly overview: counts of successful bookings grouped by facility.
+     * Monthly overview: bar chart of bookings per facility for the month.
      *
-     * X axis: facility names (categories)
-     * Y axis: count of approved + rescheduled bookings in the current month
+     * X-axis: facility names (core facilities + "OTHERS")
+     * Y-axis: number of approved/rescheduled bookings.
      */
     public function overview(Request $request)
     {
@@ -93,15 +150,15 @@ class BookingController extends Controller
         $start = $current->copy()->startOfMonth();
         $end   = $current->copy()->endOfMonth();
 
-        $bookings = Booking::with('facility')
+        $bookings = Booking::with('facilities')
             ->whereBetween('start_time', [$start, $end])
-            ->whereIn('status', ['approved', 'rescheduled'])
+            ->whereIn('status', ['booked', 'rescheduled'])
             ->get();
 
-        // Core facility names we want separate
+        // Core facilities (seeded UA core list)
         $coreNames = [
-            'BUSALAN HALL',
-            'AVR-USA HALL',
+            'BUSALIAN HALL',
+            'PAGHIUSA HALL',
             'E-HUB',
             'BALAY NI JUAN',
             'ICT AVR',
@@ -113,60 +170,33 @@ class BookingController extends Controller
             'TRACK OVAL',
         ];
 
-        $counts = [];
+        $series = [];
+        foreach ($coreNames as $name) {
+            $series[$name] = 0;
+        }
+        $series['OTHERS'] = 0;
 
         foreach ($bookings as $booking) {
-            $facility = $booking->facility;
+            if ($booking->facilities->isEmpty()) {
+                $series['OTHERS']++;
+                continue;
+            }
 
-            if (! $facility) {
-                $key = 'Others';
+            // For simplicity, we'll categorize based on the first facility
+            $facilityName = strtoupper($booking->facilities->first()->name ?? 'UNKNOWN');
+
+            if (in_array($facilityName, $coreNames, true)) {
+                $series[$facilityName]++;
             } else {
-                $name = strtoupper(trim($facility->name ?? 'Unknown'));
-
-                if (in_array($name, $coreNames, true)) {
-                    $key = $name;
-                } elseif (($facility->owner_type ?? null) === 'college') {
-                    // Any college facility not in core list
-                    $key = 'Others (college-owned)';
-                } else {
-                    // Non-core facility that is not college-owned: lumped under Others
-                    $key = 'Others';
-                }
+                $series['OTHERS']++;
             }
-
-            if (! isset($counts[$key])) {
-                $counts[$key] = 0;
-            }
-            $counts[$key]++;
-        }
-
-        // Ensure consistent order: core first, then others buckets.
-        $orderedCounts = [];
-        foreach ($coreNames as $core) {
-            if (isset($counts[$core])) {
-                $orderedCounts[$core] = $counts[$core];
-            } else {
-                $orderedCounts[$core] = 0;
-            }
-        }
-        if (isset($counts['Others (college-owned)'])) {
-            $orderedCounts['Others (college-owned)'] = $counts['Others (college-owned)'];
-        }
-        if (isset($counts['Others'])) {
-            $orderedCounts['Others'] = $counts['Others'];
-        }
-
-        // Still return something to avoid JS errors.
-        if (empty($orderedCounts)) {
-            $orderedCounts = ['(No bookings)' => 0];
         }
 
         return view('admin.overview.index', [
             'currentMonth' => $current,
-            'series'       => $orderedCounts, // [facilityLabel => count]
+            'series'       => $series,
         ]);
     }
-
 
     /**
      * Admin reschedules / modifies an existing booking.
@@ -176,7 +206,8 @@ class BookingController extends Controller
     public function update(Request $request, Booking $booking)
     {
         $data = $request->validate([
-            'facility_id'   => 'required|exists:facilities,id',
+            'facility_ids'   => 'required|array',
+            'facility_ids.*' => 'exists:facilities,id',
             'date_activity' => 'required|date',
             'start_time'    => 'required|date_format:H:i',
             'end_time'      => 'required|date_format:H:i|after:start_time',
@@ -203,11 +234,11 @@ class BookingController extends Controller
         // Admin can override conflicts, but we still prevent obviously insane overlaps
         // with itself; we skip other bookings on purpose because GSU has priority.
 
-        // Merge / update additional_details
-        $existingDetails = [];
-        if ($booking->additional_details) {
-            $existingDetails = json_decode($booking->additional_details, true) ?: [];
-        }
+        // Merge / update additional_details (always treat as array)
+        $existingDetails = is_array($booking->additional_details)
+            ? $booking->additional_details
+            : ($booking->additional_details ? json_decode($booking->additional_details, true) : []);
+
 
         $equipment = [
             'monobloc_chair' => (int) ($data['qty_monobloc'] ?? ($existingDetails['equipment']['monobloc_chair'] ?? 0)),
@@ -227,12 +258,12 @@ class BookingController extends Controller
         ]);
 
         // Persist booking changes
-        $booking->facility_id = $data['facility_id'];
+        $booking->facilities()->sync($data['facility_ids']);
         $booking->start_time  = $startDateTime;
         $booking->end_time    = $endDateTime;
         $booking->purpose     = $data['purpose'];
         $booking->status      = 'rescheduled';
-        $booking->additional_details = json_encode($updatedDetails);
+        $booking->additional_details = $updatedDetails;
         $booking->save();
 
         // Notify requester (college/org staff)
@@ -244,7 +275,6 @@ class BookingController extends Controller
                 'message' => 'GSU has changed your booking ('.$booking->booking_code.'). Reason: '.$data['reason'],
                 'data'    => [
                     'booking_id'  => $booking->id,
-                    'facility_id' => $booking->facility_id,
                 ],
             ]);
         }
@@ -278,16 +308,18 @@ class BookingController extends Controller
 
         $booking->status = 'cancelled';
 
-        $details = [];
-        if ($booking->additional_details) {
-            $details = json_decode($booking->additional_details, true) ?: [];
-        }
+        // additional_details is cast as array in Booking model; keep it consistent
+        $details = is_array($booking->additional_details)
+            ? $booking->additional_details
+            : ($booking->additional_details ? json_decode($booking->additional_details, true) : []);
+
         $details['cancel_reason']  = $data['reason'];
         $details['cancelled_by']   = auth()->user()->name ?? 'GSU Admin';
         $details['cancelled_at']   = now()->toDateTimeString();
 
-        $booking->additional_details = json_encode($details);
+        $booking->additional_details = $details; // array; cast will JSON it
         $booking->save();
+
 
         if ($booking->requester) {
             Notification::create([
@@ -300,6 +332,7 @@ class BookingController extends Controller
                 ],
             ]);
         }
+
 
         return redirect()->route('admin.bookings.index')
             ->with('status', 'Booking cancelled and requester notified.');

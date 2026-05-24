@@ -16,7 +16,7 @@ class SampleUsersSeeder extends Seeder
     {
         $password = Hash::make('password123');
 
-        // Admins A, B, C
+        // Admins (keep existing placeholder admins)
         foreach (['A', 'B', 'C'] as $letter) {
             User::updateOrCreate(
                 ['email' => "admin{$letter}@example.com"],
@@ -31,24 +31,30 @@ class SampleUsersSeeder extends Seeder
             );
         }
 
-        // College staff A, B, C
-        foreach (['A', 'B', 'C'] as $letter) {
-            $collegeId = College::where('name', "College {$letter}")->value('id');
+        // College staff (official test accounts)
+        $collegeUsers = [
+            'CCIS' => ['email' => 'college@ccis.com', 'name' => 'CCIS STAFF'],
+            'CEA'  => ['email' => 'college@cea.com',  'name' => 'CEA STAFF'],
+            'CMG'  => ['email' => 'college@cmg.com',  'name' => 'CMG STAFF'],
+        ];
+
+        foreach ($collegeUsers as $collegeName => $u) {
+            $collegeId = College::where('name', $collegeName)->value('id');
 
             User::updateOrCreate(
-                ['email' => "college{$letter}@example.com"],
+                ['email' => $u['email']],
                 [
-                    'name' => "College {$letter} Staff",
+                    'name' => $u['name'],
                     'password' => $password,
                     'role' => 'college_staff',
-                    'college_name' => "College {$letter}",
+                    'college_name' => $collegeName,
                     'college_id' => $collegeId,
                     'organization_name' => null,
                 ]
             );
         }
 
-        // Org staff A, B, C
+        // Org staff (keep placeholders)
         foreach (['A', 'B', 'C'] as $letter) {
             User::updateOrCreate(
                 ['email' => "org{$letter}@example.com"],
@@ -62,5 +68,6 @@ class SampleUsersSeeder extends Seeder
                 ]
             );
         }
+
     }
 }

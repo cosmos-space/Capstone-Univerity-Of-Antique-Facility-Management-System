@@ -32,8 +32,8 @@ class Facility extends Model
     public function isCoreFacility(): bool
     {
         $coreNames = [
-            'BUSALAN HALL',
-            'AVR-USA HALL',
+            'BUSALIAN HALL',
+            'PAGHIUSA HALL',
             'E-HUB',
             'BALAY NI JUAN',
             'ICT AVR',
@@ -48,6 +48,11 @@ class Facility extends Model
         return in_array($this->name, $coreNames, true);
     }
 
+    public function bookings()
+    {
+        return $this->belongsToMany(Booking::class, 'booking_facility');
+    }
+
     public function isAvailable(): bool
     {
         return $this->is_active
@@ -58,11 +63,6 @@ class Facility extends Model
     {
         return $this->owner_type === 'college'
             && $this->owner_college === $collegeName;
-    }
-
-    public function bookings()
-    {
-        return $this->hasMany(Booking::class);
     }
 
     public function maintenanceTickets()
@@ -100,4 +100,3 @@ class Facility extends Model
         });
     }
 }
- 

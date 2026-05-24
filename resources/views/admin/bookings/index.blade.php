@@ -4,6 +4,9 @@
 <div class="fms-card">
     <div class="fms-page-header">
         <h1 class="fms-page-title">Bookings (GSU overview)</h1>
+        <a href="{{ route('admin.bookings.create-direct') }}" class="fms-button-primary">
+            <i class="fas fa-plus mr-2"></i> Create Direct Booking
+        </a>
     </div>
 
     @if($bookings->count())
@@ -29,7 +32,13 @@
                                     {{ $booking->requester_type }} – {{ $booking->requester_unit ?? 'N/A' }}
                                 </span>
                             </td>
-                            <td>{{ optional($booking->facility)->name ?? 'Unknown' }}</td>
+                            <td>
+                                @if($booking->facilities->isNotEmpty())
+                                    {{ $booking->facilities->pluck('name')->join(', ') }}
+                                @else
+                                    Unknown
+                                @endif
+                            </td>
                             <td>
                                 {{ $booking->start_time?->format('M d, Y H:i') }} –
                                 {{ $booking->end_time?->format('H:i') }}

@@ -33,4 +33,3 @@ class FacilitiesFormPdfController extends AdminFacilitiesFormPdfController
         return parent::generate($submission);
     }
 }
-

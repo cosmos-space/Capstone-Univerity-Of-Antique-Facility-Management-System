@@ -37,11 +37,12 @@
                             </td>
                             <td class="px-4 py-2">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                    @if($submission->status === 'pending') bg-yellow-100 text-yellow-800
+@if($submission->status === 'pending') bg-yellow-100 text-yellow-800
+                                    @elseif($submission->status === 'booked') bg-blue-100 text-blue-800
                                     @elseif($submission->status === 'approved') bg-green-100 text-green-800
                                     @elseif($submission->status === 'disapproved') bg-red-100 text-red-800
                                     @else bg-gray-100 text-gray-800 @endif">
-                                    {{ ucfirst($submission->status) }}
+{{ $submission->status === 'booked' ? 'Booked' : ucfirst($submission->status) }}
                                 </span>
                             </td>
                             <td class="px-4 py-2">

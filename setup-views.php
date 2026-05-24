@@ -74,7 +74,6 @@ file_put_contents($basePath . '/notifications/index.blade.php', <<<'EOT'
         @endif
     </div>
 @endsection
-EOT
 );
 
 echo "Created: notifications/index.blade.php\n";
@@ -302,9 +301,7 @@ file_put_contents($basePath . '/admin/bookings/edit.blade.php', <<<'EOT'
     </div>
 </div>
 @endsection
-EOT
 );
 
 echo "Created: admin/bookings/edit.blade.php\n";
 echo "Setup complete!\n";
-EOT

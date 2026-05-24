@@ -3,181 +3,128 @@
 namespace App\Http\Controllers\College;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Traits\SubmitsFacilitiesForm;
+use App\Http\Requests\StoreFacilitiesUtilizationRequest;
 use App\Models\Facility;
 use App\Models\FormSubmission;
-use App\Models\Notification;
 use App\Models\Signatory;
-use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class FormController extends Controller
 {
+    use SubmitsFacilitiesForm;
+
+    public function __construct(protected NotificationService $notifications)
+    {
+    }
+
     /**
      * Show the Facilities Utilization online request form.
      */
     public function createFacilities()
     { 
         $user = Auth::user();
-        $collegeId = $user->college_id;
-        $collegeName = $user->college_name;
 
-        // GSU-managed facilities + this college's own facilities
-        $gsuFacilities = Facility::where('owner_type', 'gsu')
-            ->where('is_active', true)
+        // Facility request dropdown:
+        // - allow all GSU-owned and College-owned facilities
+        $coreFacilities = Facility::where('is_active', true)
+            ->where(function ($q) {
+                $q->where('owner_type', 'gsu')
+                  ->orWhere('owner_type', 'college');
+            })
             ->orderBy('name')
             ->get();
 
-        $collegeFacilities = Facility::where('owner_type', 'college')
-            ->ownedByCollege($collegeId, $collegeName)
-            ->where('is_active', true)
+        // Also get a list of facilities specific to the user's college to display as a hint
+        $collegeFacilities = Facility::where('is_active', true)
+            ->where('owner_type', 'college')
+            ->where('owner_college', $user->college_name)
             ->orderBy('name')
             ->get();
 
+        // Signatories (dean + program heads) for this college
         $deans = Signatory::where('type', 'dean')
-            ->forCollege($collegeId, $collegeName)
+            ->forCollege($user->college_id, $user->college_name)
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
 
         $programHeads = Signatory::where('type', 'program_head')
-            ->forCollege($collegeId, $collegeName)
+            ->forCollege($user->college_id, $user->college_name)
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
 
         return view('college.requests.facilities_create', compact(
-            'gsuFacilities',
+            'coreFacilities',
             'collegeFacilities',
             'user',
             'deans',
             'programHeads'
         ));
+
     }
 
     /**
      * Store Facilities Utilization request as a JSON form submission.
+     *
+     * Delegates core creation/notifications to SubmitsFacilitiesForm, then enriches the submission
+     * payload with extra "Noted by" fields so we don't lose the signatory feature.
      */
-    public function storeFacilities(Request $request)
+    public function storeFacilities(StoreFacilitiesUtilizationRequest $request)
     {
         $user = Auth::user();
 
-        $validated = $request->validate([
-            'date_activity' => 'required|date|after_or_equal:' . now()->addDays(7)->toDateString(),
-            'start_time'    => 'required|date_format:H:i',
-            'end_time'      => 'required|date_format:H:i|after:start_time',
-            'facility_id'   => 'required|exists:facilities,id',
-            'purpose'       => 'required|string|max:500',
-
-            // Equipment (optional but non-negative)
-            'qty_monobloc'  => 'nullable|integer|min:0',
-            'qty_table'     => 'nullable|integer|min:0',
-            'qty_fan'       => 'nullable|integer|min:0',
-            'qty_rostrum'   => 'nullable|integer|min:0',
-            'qty_flag'      => 'nullable|integer|min:0',
-            'qty_sound'     => 'nullable|integer|min:0',
-            'qty_led'       => 'nullable|integer|min:0',
-
-            'venue_others'  => 'nullable|string|max:255',
-
-            'noted_signatory_id'     => 'required|string',
-            'noted_signatory_custom' => 'nullable|string|max:255',
-        ]);
+        $facilityId = $request->input('facility_id');
 
         $notedName = null;
-        $raw = $request->input('noted_signatory_id');
-
-        if ($raw === 'custom') {
-            $request->validate([
-                'noted_signatory_custom' => 'required|string|max:255',
-            ]);
+        if ($request->filled('noted_signatory_id') && $request->input('noted_signatory_id') !== 'custom') {
+            [$type, $id] = explode(':', $request->input('noted_signatory_id')) + [null, null];
+            if ($id) {
+                $signatory = Signatory::find($id);
+                if ($signatory) {
+                    $notedName = $signatory->name;
+                }
+            }
+        } elseif ($request->filled('noted_signatory_custom')) {
             $notedName = $request->input('noted_signatory_custom');
-            $notedType = 'custom';
-        } else {
-            [$notedType, $idStr] = explode(':', $raw . ':');
-            $signatoryId = (int) $idStr;
-
-            if (! in_array($notedType, ['dean', 'program_head'], true) || $signatoryId <= 0) {
-                return back()->withInput()->withErrors(['noted_signatory_id' => 'Please select a valid signatory.']);
-            }
-
-            $signatory = Signatory::where('id', $signatoryId)
-                ->where('type', $notedType)
-                ->where(function ($query) use ($user) {
-                    if ($user->college_id) {
-                        $query->where('college_id', $user->college_id);
-                    }
-
-                    $query->orWhere('unit', $user->college_name);
-                })
-                ->where('is_active', true)
-                ->first();
-
-            if (! $signatory) {
-                return back()->withInput()->withErrors(['noted_signatory_id' => 'Please select a valid signatory.']);
-            }
-
-            $notedName = $signatory->name;
         }
 
-        // Build payload JSON (no contact number, no signature)
-        $payload = [
-            'control_no'      => null, // GSU can set later
-            'date_request'    => now()->toDateString(),
-            'requester_name'  => $user->name,
-            'requester_unit'  => $user->college_name,
-            'date_activity'   => $validated['date_activity'],
-            'time_range'      => [
-                'start' => $validated['start_time'],
-                'end'   => $validated['end_time'],
-            ],
-            'facility_id'     => (int) $validated['facility_id'],
-            'venue_others'    => $request->input('venue_others', null),
-            'purpose'         => $validated['purpose'],
-            'equipment'       => [
-                'monobloc_chair' => (int) $request->input('qty_monobloc', 0),
-                'table'          => (int) $request->input('qty_table', 0),
-                'electric_fan'   => (int) $request->input('qty_fan', 0),
-                'rostrum'        => (int) $request->input('qty_rostrum', 0),
-                'flag'           => (int) $request->input('qty_flag', 0),
-                'sound'          => (int) $request->input('qty_sound', 0),
-                'led'            => (int) $request->input('qty_led', 0),
-            ],
-            'noted_signatory_type' => $notedType,
-            'noted_signatory_name' => $notedName,
-        ];
+        $notedDatetime = $notedName ? now()->format('Y-m-d H:i:s') : null;
 
-        FormSubmission::create([
-            'type'           => 'facilities_utilization',
-            'requester_id'   => $user->id,
-            'requester_type' => 'college',
-            'requester_unit' => $user->college_name,
-            'status'         => 'pending',
-            'payload'        => $payload,
-        ]);
+        $response = $this->handleStoreFacilities($request, $facilityId);
 
-        // Notify requester
-        Notification::create([
-            'user_id' => $user->id,
-            'type'    => 'form_pending',
-            'title'   => 'Facilities utilization request submitted',
-            'message' => 'Your request has been sent to GSU for review.',
-            'data'    => ['submission_id' => FormSubmission::where('requester_id', $user->id)->latest()->first()->id ?? null],
-        ]);
+        $submission = FormSubmission::where('requester_id', $user->id)
+            ->where('type', 'facilities_utilization')
+            ->latest('id')
+            ->first();
 
-        // Notify admin(s)
-        foreach (User::where('role', 'admin')->get() as $admin) {
-            Notification::create([
-                'user_id' => $admin->id,
-                'type'    => 'form_pending_admin',
-                'title'   => 'New facilities request from college',
-                'message' => $user->college_name . ' submitted a new utilization request.',
-                'data'    => ['submission_id' => FormSubmission::where('requester_id', $user->id)->latest()->first()->id ?? null],
-            ]);
+        if ($submission) {
+            $payload = $submission->payload ?? [];
+            $payload['noted_signatory_name'] = $notedName;
+            $payload['noted_datetime']       = $notedDatetime;
+            $submission->payload = $payload;
+            $submission->save();
         }
 
-        return redirect()->route('college.dashboard')
-            ->with('status', 'Facilities utilization request submitted to GSU.');
+        return $response;
+    }
+
+    protected function requesterType(): string
+    {
+        return 'college';
+    }
+
+    protected function requesterUnit(): string
+    {
+        return Auth::user()->college_name;
+    }
+
+    protected function submittedRedirectRoute(): string
+    {
+        return 'college.dashboard';
     }
 
     /**
@@ -185,16 +132,11 @@ class FormController extends Controller
      */
     public function indexFacilities()
     {
-        $user = Auth::user();
-
-        $submissions = FormSubmission::with('requester')
-            ->where('type', 'facilities_utilization')
-            ->where('requester_id', $user->id)
-            ->orderByDesc('created_at')
-            ->paginate(10);
+        $submissions = $this->handleIndexFacilities();
 
         return view('college.requests.facilities_index', compact('submissions'));
     }
+
 
     /**
      * Show a single facilities utilization request for this college staff user.
@@ -211,12 +153,12 @@ class FormController extends Controller
         }
 
         $payload = $submission->payload ?? [];
-        $facility = null;
+        $facilities = collect();
 
-        if (!empty($payload['facility_id'])) {
-            $facility = Facility::find($payload['facility_id']);
+        if (!empty($payload['facility_ids'])) {
+            $facilities = Facility::whereIn('id', $payload['facility_ids'])->get();
         }
 
-        return view('college.requests.facilities_show', compact('submission', 'payload', 'facility'));
+        return view('college.requests.facilities_show', compact('submission', 'payload', 'facilities'));
     }
 }

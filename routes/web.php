@@ -10,14 +10,10 @@ use App\Http\Controllers\College\FacilityController as CollegeFacilityController
 use App\Http\Controllers\College\FormController as CollegeFormController;
 use App\Http\Controllers\Org\DashboardController as OrgDashboardController;
 use App\Http\Controllers\Org\FormController as OrgFormController;
+
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GsuFormController;
 use App\Http\Controllers\PublicCalendarController;
-use App\Http\Controllers\College\FacilitiesFormPdfController as CollegeFacilitiesFormPdfController;
-use App\Http\Controllers\Org\FacilitiesFormPdfController as OrgFacilitiesFormPdfController;
-
-
-
 
 // Authentication routes (simple web login)
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -47,7 +43,7 @@ Route::get('/healthz', function () {
 // Admin
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
-    
+
     // Facilities
     Route::get('/admin/facilities', [AdminFacilityController::class, 'index'])->name('admin.facilities.index');
     Route::get('/admin/facilities/create', [AdminFacilityController::class, 'create'])->name('admin.facilities.create');
@@ -55,7 +51,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/facilities/{facility}/edit', [AdminFacilityController::class, 'edit'])->name('admin.facilities.edit');
     Route::put('/admin/facilities/{facility}', [AdminFacilityController::class, 'update'])->name('admin.facilities.update');
     Route::delete('/admin/facilities/{facility}', [AdminFacilityController::class, 'destroy'])->name('admin.facilities.destroy');
-    
+
     // GSU Forms (accessible by admin/GSU staff)
     Route::get('/forms/facilities', [GsuFormController::class, 'showFacilities'])->name('forms.facilities.show');
     Route::post('/forms/facilities/download', [GsuFormController::class, 'downloadFacilities'])->name('forms.facilities.download');
@@ -74,31 +70,23 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('/admin/forms/facilities/{submission}/set-booking', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'setBooking'])
         ->name('admin.forms.facilities.set-booking');
 
-    // Generate PDF for approved facilities requests (Admin)
+    // Generate PDF for approved facilities requests
     Route::get(
         '/admin/forms/facilities/{submission}/pdf',
         [\App\Http\Controllers\Admin\FacilitiesFormPdfController::class, 'generate']
     )->name('admin.forms.facilities.pdf');
-
 
     // User management
     Route::get('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.users.index');
     Route::get('/admin/users/create', [\App\Http\Controllers\Admin\UserController::class, 'create'])->name('admin.users.create');
     Route::post('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'store'])->name('admin.users.store');
 
-    // Signatories management
-    Route::get('/admin/signatories', [\App\Http\Controllers\Admin\SignatoryController::class, 'index'])
-        ->name('admin.signatories.index');
-    Route::get('/admin/signatories/create', [\App\Http\Controllers\Admin\SignatoryController::class, 'create'])
-        ->name('admin.signatories.create');
-    Route::post('/admin/signatories', [\App\Http\Controllers\Admin\SignatoryController::class, 'store'])
-        ->name('admin.signatories.store');
-    Route::get('/admin/signatories/{signatory}/edit', [\App\Http\Controllers\Admin\SignatoryController::class, 'edit'])
-        ->name('admin.signatories.edit');
-    Route::put('/admin/signatories/{signatory}', [\App\Http\Controllers\Admin\SignatoryController::class, 'update'])
-        ->name('admin.signatories.update');
-    Route::delete('/admin/signatories/{signatory}', [\App\Http\Controllers\Admin\SignatoryController::class, 'destroy'])
-        ->name('admin.signatories.destroy');
+    // Direct booking (GSU high-priority)
+    Route::get('/admin/bookings/create-direct', [\App\Http\Controllers\Admin\BookingController::class, 'createDirect'])
+        ->name('admin.bookings.create-direct');
+    Route::post('/admin/bookings/store-direct', [\App\Http\Controllers\Admin\BookingController::class, 'storeDirect'])
+        ->name('admin.bookings.store-direct');
+
 
     // Booking management (GSU can override & reschedule)
     Route::get('/admin/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index'])
@@ -119,13 +107,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 Route::middleware(['auth', 'role:college_staff'])->group(function () {
     Route::get('/college/dashboard', [CollegeDashboardController::class, 'index'])->name('college.dashboard');
 
-    // Download approved facilities form PDF (requester only)
-    Route::get(
-        '/college/requests/facilities/{submission}/pdf',
-        [CollegeFacilitiesFormPdfController::class, 'generate']
-    )->name('college.requests.facilities.pdf');
-
-    
     // Facilities
     Route::get('/college/facilities', [CollegeFacilityController::class, 'index'])->name('college.facilities.index');
     Route::get('/college/facilities/create', [CollegeFacilityController::class, 'create'])->name('college.facilities.create');
@@ -133,7 +114,7 @@ Route::middleware(['auth', 'role:college_staff'])->group(function () {
     Route::get('/college/facilities/{facility}/edit', [CollegeFacilityController::class, 'edit'])->name('college.facilities.edit');
     Route::put('/college/facilities/{facility}', [CollegeFacilityController::class, 'update'])->name('college.facilities.update');
     Route::delete('/college/facilities/{facility}', [CollegeFacilityController::class, 'destroy'])->name('college.facilities.destroy');
-    
+
     // Bookings list (existing page, untouched)
     Route::get('/college/bookings', function () {
         return view('college.bookings.index');
@@ -163,13 +144,6 @@ Route::middleware(['auth', 'role:college_staff'])->group(function () {
 Route::middleware(['auth', 'role:org_staff'])->group(function () {
     Route::get('/org/dashboard', [OrgDashboardController::class, 'index'])->name('org.dashboard');
 
-    // Download approved facilities form PDF (requester only)
-    Route::get(
-        '/org/requests/facilities/{submission}/pdf',
-        [OrgFacilitiesFormPdfController::class, 'generate']
-    )->name('org.requests.facilities.pdf');
-
-
     // Booking calendar (read-only for this org staff)
     Route::get('/org/bookings', [\App\Http\Controllers\Org\BookingController::class, 'calendar'])
         ->name('org.bookings.index');
@@ -182,4 +156,63 @@ Route::middleware(['auth', 'role:org_staff'])->group(function () {
     Route::get('/org/requests/facilities/index', [OrgFormController::class, 'indexFacilities'])
         ->name('org.requests.facilities.index');
 });
+
+// TEMP: create test users for login (remove after you test)
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+
+Route::get('/make-admin', function () {
+    $user = User::updateOrCreate(
+        ['email' => 'admin@example.com'],
+        [
+            'name' => 'Admin User',
+            'password' => Hash::make('password123'),
+            'role' => 'admin',
+        ]
+    );
+
+    return $user;
+});
+
+Route::get('/make-college-staff', function () {
+    $user = User::updateOrCreate(
+        ['email' => 'college@example.com'],
+        [
+            'name' => 'College Staff User',
+            'password' => Hash::make('password123'),
+            'role' => 'college_staff',
+            'college_name' => 'College of Engineering',
+        ]
+    );
+
+    return $user;
+});
+
+Route::get('/make-org-staff', function () {
+    $user = User::updateOrCreate(
+        ['email' => 'org@example.com'],
+        [
+            'name' => 'Organization Staff User',
+            'password' => Hash::make('password123'),
+            'role' => 'org_staff',
+            'organization_name' => 'Student Council',
+        ]
+    );
+
+    return $user;
+});
+
+Route::get('/make-user', function () {
+    $user = User::updateOrCreate(
+        ['email' => 'user@example.com'],
+        [
+            'name' => 'Regular User',
+            'password' => Hash::make('password123'),
+            'role' => 'viewer',
+        ]
+    );
+
+    return $user;
+});
+
 

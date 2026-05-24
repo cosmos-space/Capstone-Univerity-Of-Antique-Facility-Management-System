@@ -3,24 +3,30 @@
 @section('org-content')
 @php
     use Carbon\Carbon;
-    $monthLabel = $currentMonth->format('F Y');
-    $daysInMonth = $currentMonth->daysInMonth;
+    $monthLabel   = $currentMonth->format('F Y');
+    $daysInMonth  = $currentMonth->daysInMonth;
     $firstWeekday = $currentMonth->copy()->startOfMonth()->dayOfWeekIso;
-    $prevMonth = $currentMonth->copy()->subMonth()->format('Y-m');
-    $nextMonth = $currentMonth->copy()->addMonth()->format('Y-m');
+    $prevMonth    = $currentMonth->copy()->subMonth()->format('Y-m');
+    $nextMonth    = $currentMonth->copy()->addMonth()->format('Y-m');
 @endphp
 
 <div class="fms-card">
     <div class="fms-page-header border-0 pb-0 mb-4">
         <div>
-            <h1 class="fms-page-title">My Booking Calendar</h1>
-            <p class="text-xs text-neutral-600">Read-only view of bookings requested by your organization.</p>
+            <h1 class="fms-page-title">Booking Calendar</h1>
+            <p class="text-xs text-neutral-600">
+                Read-only view of your organization’s active bookings (booked / rescheduled).
+            </p>
         </div>
         <div class="flex items-center gap-2 text-sm">
             <a href="{{ route('org.bookings.index', ['month' => $prevMonth]) }}" class="fms-link">← Prev</a>
             <span class="text-neutral-600">{{ $monthLabel }}</span>
             <a href="{{ route('org.bookings.index', ['month' => $nextMonth]) }}" class="fms-link">Next →</a>
         </div>
+    </div>
+
+    <div class="mb-2 text-xs text-neutral-600">
+        Only active bookings (booked / rescheduled) are shown here. Pending requests are not included.
     </div>
 
     <div class="mb-8 border border-black overflow-x-auto">
@@ -35,7 +41,7 @@
             <tbody>
                 @php
                     $dayCounter = 1;
-                    $cellCount = 0;
+                    $cellCount  = 0;
                 @endphp
 
                 @while ($dayCounter <= $daysInMonth)
@@ -43,35 +49,34 @@
                         @for ($col = 1; $col <= 7; $col++)
                             @php $cellCount++; @endphp
                             @php
-                                $displayDay = $cellCount >= $firstWeekday && $dayCounter <= $daysInMonth;
+                                $displayDay  = $cellCount >= $firstWeekday && $dayCounter <= $daysInMonth;
                                 $dayBookings = [];
                                 $hasBookings = false;
 
                                 if ($displayDay) {
-                                    $dateObj = $currentMonth->copy()->day($dayCounter);
-                                    $dateKey = $dateObj->toDateString();
+                                    $dateObj     = $currentMonth->copy()->day($dayCounter);
+                                    $dateKey     = $dateObj->toDateString();
                                     $dayBookings = $days[$dateKey] ?? [];
                                     $hasBookings = count($dayBookings) > 0;
                                 }
                             @endphp
-                            <td class="align-top border-r border-black last:border-r-0 p-1 h-32 {{ $hasBookings ? 'bg-neutral-100' : '' }}">
+
+                            <td class="align-top border-r border-black last:border-r-0 p-1 h-24 w-[110px] {{ $hasBookings ? 'bg-neutral-100' : '' }}">
                                 @if ($displayDay)
-                                    <div class="flex items-center justify-between mb-1">
-                                        <span class="text-[11px] font-semibold">{{ $dayCounter }}</span>
+                                    <div class="flex flex-col items-center justify-center h-full">
+                                        <span class="text-[11px] font-semibold mb-0.5">{{ $dayCounter }}</span>
+
                                         @if ($hasBookings)
-                                            <span class="text-[10px] text-neutral-500">{{ count($dayBookings) }} booking{{ count($dayBookings) > 1 ? 's' : '' }}</span>
+                                            <a
+                                                href="{{ route('org.bookings.index', ['month' => $currentMonth->format('Y-m'), 'day' => $dayCounter]) }}"
+                                                class="text-[10px] text-neutral-700"
+                                            >
+                                                {{ count($dayBookings) }} booking{{ count($dayBookings) > 1 ? 's' : '' }}
+                                            </a>
                                         @endif
+
+                                        @php $dayCounter++; @endphp
                                     </div>
-
-                                    @foreach ($dayBookings as $booking)
-                                        <div class="mb-1 border border-black px-1 py-0.5 bg-white text-[10px]">
-                                            <div class="font-semibold truncate">{{ optional($booking->facility)->name ?? 'Unknown facility' }}</div>
-                                            <div class="text-neutral-600">{{ $booking->start_time->format('H:i') }}–{{ $booking->end_time->format('H:i') }}</div>
-                                            <div class="text-neutral-600 truncate">{{ $booking->requester_unit ?? ucfirst($booking->requester_type) }}</div>
-                                        </div>
-                                    @endforeach
-
-                                    @php $dayCounter++; @endphp
                                 @endif
                             </td>
                         @endfor
@@ -80,5 +85,44 @@
             </tbody>
         </table>
     </div>
+
+    @if(!empty($selectedDate) && $selectedDateBookings->isNotEmpty())
+        @php
+            $dateLabel = $selectedDate->format('F d, Y');
+        @endphp
+
+        <h2 class="mb-2 text-sm font-semibold uppercase tracking-widest text-neutral-500">
+            Bookings on {{ $dateLabel }}
+        </h2>
+
+        <div class="fms-table-wrap mb-6">
+            <table class="fms-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Facilities</th>
+                        <th>Purpose</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($selectedDateBookings as $booking)
+                        @php
+                            $facilityNames = $booking->facilities->pluck('name')->join(', ');
+                        @endphp
+                        <tr>
+                            <td>
+                                {{ $booking->start_time->format('H:i') }} – {{ $booking->end_time->format('H:i') }}
+                            </td>
+                            <td>{{ $facilityNames !== '' ? $facilityNames : 'Unknown facility' }}</td>
+                            <td>{{ \Illuminate\Support\Str::limit($booking->purpose ?? '-', 80) }}</td>
+                            <td><span class="fms-badge">{{ ucfirst($booking->status) }}</span></td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endif
 </div>
 @endsection
+

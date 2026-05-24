@@ -3,9 +3,14 @@
 namespace App\Http\Controllers\Traits;
 
 use App\Http\Requests\StoreFacilitiesUtilizationRequest;
+use App\Models\Booking;
+use App\Models\Facility;
+use App\Models\Facility;
 use App\Models\FormSubmission;
 use App\Services\NotificationService;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 trait SubmitsFacilitiesForm
 {
@@ -15,10 +20,15 @@ trait SubmitsFacilitiesForm
 
     abstract protected function submittedRedirectRoute(): string;
 
-    protected function handleStoreFacilities(StoreFacilitiesUtilizationRequest $request): \Illuminate\Http\RedirectResponse
+    protected function handleStoreFacilities(StoreFacilitiesUtilizationRequest $request, int $facilityId): \Illuminate\Http\RedirectResponse
     {
         $user = Auth::user();
         $validated = $request->validated();
+
+        $startDateTime = Carbon::parse($validated['date_activity'] . ' ' . $validated['start_time']);
+        $endDateTime   = Carbon::parse($validated['date_activity'] . ' ' . $validated['end_time']);
+
+        $facility = Facility::findOrFail($facilityId);
 
         $payload = [
             'control_no'      => null,
@@ -30,8 +40,8 @@ trait SubmitsFacilitiesForm
                 'start' => $validated['start_time'],
                 'end'   => $validated['end_time'],
             ],
-            'facility_id'     => (int) $validated['facility_id'],
-            'venue_others'    => $request->input('venue_others', null),
+            'facility_id'     => $facility->id,
+            'facility_name'   => $facility->name,
             'purpose'         => $validated['purpose'],
             'equipment'       => [
                 'monobloc_chair' => (int) $request->input('qty_monobloc', 0),

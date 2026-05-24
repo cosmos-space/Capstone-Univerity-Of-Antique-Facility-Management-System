@@ -11,13 +11,18 @@ class SignatorySeeder extends Seeder
     public function run(): void
     {
         $items = [
-            // Colleges
-            ['type' => 'dean',         'name' => 'Dean A',          'unit' => 'College A'],
-            ['type' => 'program_head', 'name' => 'Program Head A',  'unit' => 'College A'],
-            ['type' => 'dean',         'name' => 'Dean B',          'unit' => 'College B'],
-            ['type' => 'program_head', 'name' => 'Program Head B',  'unit' => 'College B'],
-            ['type' => 'dean',         'name' => 'Dean C',          'unit' => 'College C'],
-            ['type' => 'program_head', 'name' => 'Program Head C',  'unit' => 'College C'],
+            // CCIS
+            ['type' => 'dean',         'name' => 'CCIS Dean',        'unit' => 'CCIS'],
+            ['type' => 'program_head', 'name' => 'CCIS Program Head','unit' => 'CCIS'],
+
+            // CEA
+            ['type' => 'dean',         'name' => 'CCIS Dean',        'unit' => 'CEA'],
+            ['type' => 'program_head', 'name' => 'CEA Program Head', 'unit' => 'CEA'],
+
+            // CMG
+            ['type' => 'dean',         'name' => 'CBA Dean',         'unit' => 'CMG'],
+            ['type' => 'program_head', 'name' => 'CMG Program Head',  'unit' => 'CMG'],
+
 
             // Organizations
             ['type' => 'org_president','name' => 'Org A President', 'unit' => 'Org A'],
@@ -32,9 +37,10 @@ class SignatorySeeder extends Seeder
         foreach ($items as $item) {
             $collegeId = null;
 
-            if (str_starts_with($item['unit'], 'College ')) {
+            if ($item['unit'] === 'CCIS' || $item['unit'] === 'CEA' || $item['unit'] === 'CMG') {
                 $collegeId = College::where('name', $item['unit'])->value('id');
             }
+
 
             Signatory::updateOrCreate(
                 ['type' => $item['type'], 'name' => $item['name'], 'unit' => $item['unit']],

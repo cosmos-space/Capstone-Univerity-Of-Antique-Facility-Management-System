@@ -32,7 +32,7 @@
         </div>
         <div>
             <dt class="font-semibold text-gray-700">Status</dt>
-            <dd class="text-gray-800">{{ ucfirst($submission->status) }}</dd>
+<dd class="text-gray-800">{{ $submission->status === 'booked' ? 'Booked' : ucfirst($submission->status) }}</dd>
         </div>
         <div>
             <dt class="font-semibold text-gray-700">Date Request (recorded)</dt>
@@ -128,14 +128,16 @@
             </form>
         @endif
 
-        @if($submission->status === 'approved')
-            {{-- Generate PDF for the approved request --}}
+        @if(in_array($submission->status, ['approved','booked'], true))
+            {{-- Generate PDF for the approved/booked request --}}
             <form method="GET" action="{{ route('admin.forms.facilities.pdf', $submission) }}">
                 <button type="submit" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800 text-sm">
                     Generate PDF
                 </button>
             </form>
+        @endif
 
+        @if($submission->status === 'approved')
             {{-- Convert to booking after physical signing --}}
             <form method="POST" action="{{ route('admin.forms.facilities.set-booking', $submission) }}">
                 @csrf

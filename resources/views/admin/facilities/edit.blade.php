@@ -34,7 +34,9 @@
         <div>
             <label for="owner_type" class="block text-sm font-medium text-gray-700">Owner Type</label>
             <select name="owner_type" id="owner_type" required
-                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    @if($facility->owner_type === 'college') disabled @endif>
+
                 <option value="">Select Owner Type</option>
                 <option value="gsu" {{ old('owner_type', $facility->owner_type) == 'gsu' ? 'selected' : '' }}>GSU (General Services Unit)</option>
                 <option value="college" {{ old('owner_type', $facility->owner_type) == 'college' ? 'selected' : '' }}>College</option>
@@ -50,7 +52,9 @@
             <input type="text" name="owner_college" id="owner_college"
                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                    value="{{ old('owner_college', $facility->owner_college) }}"
-                   placeholder="e.g., College of Engineering">
+                   placeholder="e.g., College A"
+                   @if($facility->owner_type === 'college') disabled @endif>
+
             @error('owner_college')
                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
             @enderror

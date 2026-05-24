@@ -73,7 +73,8 @@ class NotificationService
             $requesterId,
             'booking_created',
             'Booking confirmed',
-            "Your facilities request has been converted into a booking ({$bookingCode}).",
+            "Your facilities utilization request has been booked ({$bookingCode}).",
+
             ['submission_id' => $submissionId, 'booking_id' => $bookingId]
         );
     }
@@ -86,6 +87,17 @@ class NotificationService
             'Booking updated by GSU',
             "GSU has changed your booking ({$bookingCode}). Reason: {$reason}",
             ['booking_id' => $bookingId, 'facility_id' => $facilityId]
+        );
+    }
+
+    public function notifyBookingPreempted(int $requesterId, int $bookingId, string $bookingCode): void
+    {
+        $this->notifyUser(
+            $requesterId,
+            'booking_preempted',
+            'Urgent: Your Booking Has Been Preempted',
+            "Your booking ({$bookingCode}) has been preempted by a high-priority event. Please contact the GSU office to reschedule.",
+            ['booking_id' => $bookingId]
         );
     }
 

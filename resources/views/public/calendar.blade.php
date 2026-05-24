@@ -26,7 +26,7 @@
     </div>
 
     <div class="mb-2 text-xs text-neutral-600">
-        Only approved and rescheduled bookings are shown here.
+        Only active bookings (booked / rescheduled) are shown here. Pending or merely approved requests are not included.
     </div>
 
     <div class="mb-8 border border-black overflow-x-auto">
@@ -48,27 +48,24 @@
                     <tr class="border-t border-black">
                         @for ($col = 1; $col <= 7; $col++)
                             @php $cellCount++; @endphp
-                            <td class="align-top border-r border-black last:border-r-0 p-1 h-32">
+                           <td class="align-top border-r border-black last:border-r-0 p-1 h-24 w-[110px]">
                                 @if ($cellCount >= $firstWeekday && $dayCounter <= $daysInMonth)
                                     @php
                                         $dateObj = $currentMonth->copy()->day($dayCounter);
                                         $dateKey = $dateObj->toDateString();
                                         $dayBookings = $days[$dateKey] ?? [];
                                     @endphp
-                                    <div class="flex items-center justify-between mb-1">
-                                        <span class="text-[11px] font-semibold">{{ $dayCounter }}</span>
+                                  <div class="flex flex-col items-center justify-center h-full">
+                                        <span class="text-[11px] font-semibold mb-0.5">{{ $dayCounter }}</span>
                                         @if (count($dayBookings) > 0)
-                                            <span class="text-[10px] text-neutral-500">{{ count($dayBookings) }} booking{{ count($dayBookings) > 1 ? 's' : '' }}</span>
+                                            <a
+                                                href="{{ route('home', ['month' => $currentMonth->format('Y-m'), 'day' => $dayCounter]) }}"
+                                                class="text-[10px] text-neutral-700"
+                                            >
+                                                {{ count($dayBookings) }} booking{{ count($dayBookings) > 1 ? 's' : '' }}
+                                            </a>
                                         @endif
                                     </div>
-
-                                    @foreach ($dayBookings as $booking)
-                                        <div class="mb-1 border border-black px-1 py-0.5 bg-white">
-                                            <div class="text-[10px] font-semibold">{{ optional($booking->facility)->name ?? 'Unknown facility' }}</div>
-                                            <div class="text-[10px] text-neutral-600">{{ $booking->start_time->format('H:i') }}–{{ $booking->end_time->format('H:i') }}</div>
-                                            <div class="text-[10px] text-neutral-600">{{ \Illuminate\Support\Str::limit($booking->purpose ?? 'No purpose provided', 60) }}</div>
-                                        </div>
-                                    @endforeach
 
                                     @php $dayCounter++; @endphp
                                 @endif
@@ -78,7 +75,78 @@
                 @endwhile
             </tbody>
         </table>
-    </div>
+   </div>
+
+    @if(!empty($selectedDate) && $selectedDateBookings->isNotEmpty())
+        @php
+            $dateLabel = $selectedDate->format('F d, Y');
+        @endphp
+        <div class="mb-4 border border-black p-3 text-xs">
+            <h2 class="mb-2 text-sm font-semibold text-black">Bookings on {{ $dateLabel }}</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-xs">
+                    <thead class="bg-neutral-100 border-b border-black">
+                        <tr>
+                            <th class="px-2 py-1 text-left">Time</th>
+                            <th class="px-2 py-1 text-left">Facilities</th>
+                            <th class="px-2 py-1 text-left">Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($selectedDateBookings as $booking)
+                            @php
+                                $facilityNames = $booking->facilities->pluck('name')->join(', ');
+                            @endphp
+                            <tr class="border-b border-black last:border-b-0">
+                                <td class="px-2 py-1">
+                                    {{ $booking->start_time->format('H:i') }} – {{ $booking->end_time->format('H:i') }}
+                                </td>
+                                <td class="px-2 py-1">
+                                    {{ $facilityNames !== '' ? $facilityNames : 'Unknown facility' }}
+                                </td>
+                                <td class="px-2 py-1">
+                                    {{ \Illuminate\Support\Str::limit($booking->purpose ?? '-', 120) }}
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <p class="mt-2 text-[11px] text-neutral-600">
+                This is a read-only public view. Contact GSU for any changes.
+            </p>
+        </div>
+    @endif
+
+    {{-- Facilities currently unavailable / under maintenance --}}
+    @if(isset($unavailableFacilities) && $unavailableFacilities->isNotEmpty())
+        <div class="mb-4 border border-black p-3 text-xs">
+            <h2 class="mb-2 text-sm font-semibold text-black">Facilities not available for booking</h2>
+            <table class="min-w-full text-xs">
+                <thead class="bg-neutral-100 border-b border-black">
+                    <tr>
+                        <th class="px-2 py-1 text-left">Facility</th>
+                        <th class="px-2 py-1 text-left">Status</th>
+                        <th class="px-2 py-1 text-left">Location</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($unavailableFacilities as $facility)
+                        <tr class="border-b border-black last:border-b-0">
+                            <td class="px-2 py-1">{{ $facility->name }}</td>
+                            <td class="px-2 py-1">
+                                {{ ucfirst($facility->availability_status ?? 'unavailable') }}
+                            </td>
+                            <td class="px-2 py-1">{{ $facility->location }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            <p class="mt-2 text-[11px] text-neutral-600">
+                These facilities are marked as unavailable or under maintenance by GSU or the owning college and cannot be booked.
+            </p>
+        </div>
+    @endif
 
     @auth
         <p class="text-xs text-neutral-600">

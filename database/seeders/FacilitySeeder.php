@@ -22,19 +22,20 @@ class FacilitySeeder extends Seeder
         $facilities = [
             // GSU-controlled, non-AVR facilities
             [
-                'name'          => 'BUSALAN HALL',
+'name'          => 'BUSALIAN HALL',
                 'location'      => 'Main Campus',
                 'owner_type'    => 'gsu',
                 'owner_college' => null,
-                'description'   => 'BUSALAN HALL',
+'description'   => 'BUSALIAN HALL',
             ],
             [
-                'name'          => 'AVR-USA HALL',
+                'name'          => 'PAGHIUSA HALL',
                 'location'      => 'Main Campus',
                 'owner_type'    => 'gsu',
                 'owner_college' => null,
-                'description'   => 'AVR-USA HALL',
+                'description'   => 'PAGHIUSA HALL',
             ],
+
             [
                 'name'          => 'E-HUB',
                 'location'      => 'Main Campus',
@@ -76,23 +77,24 @@ class FacilitySeeder extends Seeder
                 'name'          => 'ICT AVR',
                 'location'      => 'ICT Building',
                 'owner_type'    => 'college',
-                'owner_college' => 'College of ICT',
+                'owner_college' => 'CCIS',
                 'description'   => 'ICT AVR',
             ],
             [
                 'name'          => 'CEA AVR',
                 'location'      => 'CEA Building',
                 'owner_type'    => 'college',
-                'owner_college' => 'College of Engineering',
+                'owner_college' => 'CEA',
                 'description'   => 'CEA AVR',
             ],
             [
                 'name'          => 'CBA AVR',
                 'location'      => 'CBA Building',
                 'owner_type'    => 'college',
-                'owner_college' => 'College of Business & Accountancy',
+                'owner_college' => 'CMG',
                 'description'   => 'CBA AVR',
             ],
+
             [
                 'name'          => 'NEW AVR',
                 'location'      => 'Main Campus',
@@ -128,4 +130,3 @@ class FacilitySeeder extends Seeder
         }
     }
 }
- 

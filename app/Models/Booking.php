@@ -11,7 +11,6 @@ class Booking extends Model
  
     protected $fillable = [
         'requester_id',
-        'facility_id',
         'start_time',
         'end_time',
         'requester_type',
@@ -58,9 +57,11 @@ class Booking extends Model
         $this->additional_details = $details;
     }
 
-    public function scopeOverlapping($query, int $facilityId, $startTime, $endTime)
+    public function scopeOverlapping($query, array $facilityIds, $startTime, $endTime)
     {
-        return $query->where('facility_id', $facilityId)
+        return $query->whereHas('facilities', function ($q) use ($facilityIds) {
+            $q->whereIn('facility_id', $facilityIds);
+        })
             ->where('status', 'approved')
             ->where(function ($q) use ($startTime, $endTime) {
                 $q->whereBetween('start_time', [$startTime, $endTime])
@@ -77,9 +78,9 @@ class Booking extends Model
         return $this->belongsTo(User::class, 'requester_id');
     }
 
-    public function facility()
+    public function facilities()
     {
-        return $this->belongsTo(Facility::class);
+        return $this->belongsToMany(Facility::class, 'booking_facility');
     }
 
     public function maintenanceTickets()
@@ -87,4 +88,3 @@ class Booking extends Model
         return $this->hasMany(MaintenanceTicket::class);
     }
 }
- 

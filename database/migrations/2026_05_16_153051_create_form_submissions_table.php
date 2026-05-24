@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('requester_id')->constrained('users')->onDelete('cascade');
             $table->string('requester_type'); // college, org, admin
             $table->string('requester_unit')->nullable(); // college_name / organization_name
-            $table->string('status')->default('pending'); // pending, approved, disapproved, cancelled, converted
+            $table->string('status')->default('pending'); // pending, approved, disapproved, cancelled, booked
             $table->json('payload');
             $table->timestamps();
         });
@@ -31,4 +31,3 @@ return new class extends Migration
         Schema::dropIfExists('form_submissions');
     }
 };
- 

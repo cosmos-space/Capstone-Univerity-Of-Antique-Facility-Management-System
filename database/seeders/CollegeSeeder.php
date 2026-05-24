@@ -13,9 +13,9 @@ class CollegeSeeder extends Seeder
     public function run(): void
     {
         $colleges = [
-            ['name' => 'College A', 'short_name' => 'A', 'description' => 'Sample College A for seeded test data.'],
-            ['name' => 'College B', 'short_name' => 'B', 'description' => 'Sample College B for seeded test data.'],
-            ['name' => 'College C', 'short_name' => 'C', 'description' => 'Sample College C for seeded test data.'],
+            ['name' => 'CCIS', 'short_name' => 'CCIS', 'description' => 'CCIS for seeded test data.'],
+            ['name' => 'CEA',  'short_name' => 'CEA',  'description' => 'CEA for seeded test data.'],
+            ['name' => 'CMG',  'short_name' => 'CMG',  'description' => 'CMG for seeded test data.'],
         ];
 
         foreach ($colleges as $data) {

@@ -334,7 +334,7 @@ None (extends base `Model`).
 **Table:** `form_submissions`
 
 ### Description
-Represents a digitally submitted form (e.g., a Facilities Utilization Request). Stores all form data as a JSON payload. Tracks the submission through its lifecycle from pending to approved/disapproved and eventually converted into a booking.
+Tracks the submission through its lifecycle from pending to approved/disapproved and eventually booked into a booking.
 
 ### Schema
 
@@ -345,7 +345,7 @@ Represents a digitally submitted form (e.g., a Facilities Utilization Request). 
 | `requester_id` | bigint | FK → `users.id`, cascade delete | User who submitted the form |
 | `requester_type` | string | required | Requester role: `college`, `org`, or `admin` |
 | `requester_unit` | string | nullable | College name or organization name |
-| `status` | string | default `'pending'` | One of: `pending`, `approved`, `disapproved`, `cancelled`, `converted` |
+| `status` | string | default `'pending'` | One of: `pending`, `approved`, `disapproved`, `cancelled`, `booked` |
 | `payload` | json | required | Full form data as JSON (see Payload Structure below) |
 | `created_at` | timestamp | auto | Record creation time |
 | `updated_at` | timestamp | auto | Record update time |

@@ -13,7 +13,10 @@
     <div class="fms-page-header border-0 pb-0 mb-4">
         <div>
             <h1 class="fms-page-title">Monthly Overview</h1>
-            <p class="text-xs text-neutral-600">Bookings per day for approved and rescheduled facility bookings this month.</p>
+            <p class="text-xs text-neutral-600">
+                Number of approved/rescheduled bookings this month per facility
+                (custom college / org facilities are grouped under "OTHERS").
+            </p>
         </div>
         <div class="flex items-center gap-2 text-sm">
             <a href="{{ route('admin.overview', ['month' => $prevMonth]) }}" class="fms-link">← Prev</a>
@@ -28,6 +31,7 @@
 </div>
 
 <script>
+
     (function() {
         const labels = @json($labels);
         const data   = @json($data);

@@ -20,9 +20,10 @@ class FacilitiesFormPdfController extends Controller
      */
     public function generate(FormSubmission $submission): BinaryFileResponse
     {
-        if ($submission->type !== 'facilities_utilization' || ! in_array($submission->status, ['approved', 'converted'], true)) {
+        if ($submission->type !== 'facilities_utilization' || ! in_array($submission->status, ['approved', 'booked'], true)) {
             abort(404);
         }
+
 
 
         $payload = $submission->payload ?? [];
@@ -55,25 +56,26 @@ class FacilitiesFormPdfController extends Controller
 
 
         // Map facility names to template checkbox placeholders.
+        // IMPORTANT: placeholders must match the DOCX template (ex: PAGHIUSA HALL / PAGHIUSA).
         $facilityToKeyMap = [
-            'BUSALAN HALL' => 'busalan_hall',
-            'AVR-USA HALL' => 'paghiusa_hall',
-            'E-HUB'        => 'ehub',
-            'BALAY NI JUAN'=> 'balay_ni_juan',
-            'ICT AVR'      => 'ict_avr',
-            'CEA AVR'      => 'cea_avr',
-            'CBA AVR'      => 'cba_avr',
-            'NEW AVR'      => 'new_avr',
-            'GRAND STAND'  => 'grandstand',
-            'COVERED GYM'  => 'covered_gym',
-            'TRACK OVAL'   => 'track_oval',
+            'BUSALIAN HALL'   => 'busalian_hall',
+            'PAGHIUSA HALL'   => 'paghiusa_hall',
+            'E-HUB'           => 'ehub',
+            'BALAY NI JUAN'   => 'balay_ni_juan',
+            'ICT AVR'         => 'ict_avr',
+            'CEA AVR'         => 'cea_avr',
+            'CBA AVR'         => 'cba_avr',
+            'NEW AVR'         => 'new_avr',
+            'GRAND STAND'     => 'grandstand',
+            'COVERED GYM'     => 'covered_gym',
+            'TRACK OVAL'      => 'track_oval',
         ];
 
         $checked = '✔';
         $unchecked = '';
 
         $venueCheckboxes = [
-            'busalan_hall'  => $unchecked,
+            'busalian_hall'  => $unchecked,
             'paghiusa_hall'  => $unchecked,
             'ehub'           => $unchecked,
             'balay_ni_juan' => $unchecked,
@@ -154,7 +156,7 @@ class FacilitiesFormPdfController extends Controller
         // set req_name and req_datetime from system.
         $template->setValue('req_signature',      '');
         $template->setValue('req_name',           $requesterName);
-        $template->setValue('req_datetime',       now()->format('F d, Y  h:i A'));
+        $template->setValue('req_datetime',       now()->format('M d, Y h:i A'));
         $template->setValue('noted_signature',    '');
         $template->setValue('noted_name',         $notedName);
         $template->setValue('noted_datetime',     $notedDatetime);

@@ -33,12 +33,20 @@
             </dd>
         </div>
         <div class="md:col-span-2">
-            <dt class="font-semibold text-gray-700">Facility</dt>
+            <dt class="font-semibold text-gray-700">Venues</dt>
             <dd class="text-gray-800">
-                @if($facility)
-                    {{ $facility->name }} ({{ $facility->location }})
-                @else
-                    Unknown (ID: {{ $payload['facility_id'] ?? 'N/A' }})
+                @if($facilities->isNotEmpty())
+                    <ul class="list-disc list-inside">
+                        @foreach($facilities as $facility)
+                            <li>{{ $facility->name }} ({{ $facility->location }})</li>
+                        @endforeach
+                    </ul>
+                @endif
+                @if(!empty($payload['facility_name_custom']))
+                    <p class="mt-2"><strong>Custom Venue:</strong> {{ $payload['facility_name_custom'] }}</p>
+                @endif
+                @if($facilities->isEmpty() && empty($payload['facility_name_custom']))
+                    Unknown
                 @endif
             </dd>
         </div>

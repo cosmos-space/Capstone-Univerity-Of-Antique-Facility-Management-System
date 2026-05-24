@@ -95,4 +95,3 @@ class User extends Authenticatable
         return $this->belongsTo(College::class);
     }
 }
-  

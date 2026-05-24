@@ -8,6 +8,17 @@
         Submit a request for facility and equipment usage. Date of request will be recorded automatically after submission.
     </p>
 
+    @if($collegeFacilities->isNotEmpty())
+        <div class="mb-4 p-3 bg-blue-50 text-blue-800 border border-blue-200 rounded">
+            <h2 class="font-semibold text-md mb-2">Approved College Facilities</h2>
+            <ul class="list-disc list-inside text-sm">
+                @foreach($collegeFacilities as $facility)
+                    <li>{{ $facility->name }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     @if ($errors->any())
         <div class="mb-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded">
             <ul class="list-disc list-inside text-sm">
@@ -45,26 +56,15 @@
 
         {{-- Facility --}}
         <div>
-            <label class="block text-sm font-medium text-gray-700">Facility</label>
-            <select name="facility_id" required
+            <label for="facility_id" class="block text-sm font-medium text-gray-700">Venue</label>
+            <select name="facility_id" id="facility_id" required
                     class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
-                <option value="">Select Facility</option>
-                <optgroup label="GSU Facilities">
-                    @foreach($gsuFacilities as $facility)
-                        <option value="{{ $facility->id }}" {{ old('facility_id') == $facility->id ? 'selected' : '' }}>
-                            {{ $facility->name }} ({{ $facility->location }})
-                        </option>
-                    @endforeach
-                </optgroup>
-                @if($collegeFacilities->count() > 0)
-                <optgroup label="My College Facilities">
-                    @foreach($collegeFacilities as $facility)
-                        <option value="{{ $facility->id }}" {{ old('facility_id') == $facility->id ? 'selected' : '' }}>
-                            {{ $facility->name }} ({{ $facility->location }})
-                        </option>
-                    @endforeach
-                </optgroup>
-                @endif
+                <option value="">Select a facility</option>
+                @foreach($coreFacilities as $facility)
+                    <option value="{{ $facility->id }}" {{ old('facility_id') == $facility->id ? 'selected' : '' }}>
+                        {{ $facility->name }}
+                    </option>
+                @endforeach
             </select>
         </div>
 
@@ -85,7 +85,7 @@
                     <option value="program_head:{{ $s->id }}" {{ old('noted_signatory_id') == "program_head:{$s->id}" ? 'selected' : '' }}>
                         Program Head – {{ $s->name }} ({{ $s->unit }})
                     </option>
-                @endforeach
+                @endforeach 
             </select>
 
             <div class="mt-3 hidden" id="custom-noted-input">

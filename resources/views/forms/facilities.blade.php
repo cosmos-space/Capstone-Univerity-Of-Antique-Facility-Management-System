@@ -360,8 +360,9 @@
     <!-- Venues -->
     <div class="section-header">Venues to be Utilized:</div>
     <div class="venues-box">
-      <label class="venue-item"><input type="checkbox" name="busalan_hall" {{ old('busalan_hall') ? 'checked' : '' }}> BUSALAN HALL</label>
-      <label class="venue-item"><input type="checkbox" name="avr_usa_hall" {{ old('avr_usa_hall') ? 'checked' : '' }}> AVR-USA HALL</label>
+      <label class="venue-item"><input type="checkbox" name="busalian_hall" {{ old('busalian_hall') ? 'checked' : '' }}> BUSALIAN HALL</label>
+      <label class="venue-item"><input type="checkbox" name="paghiusa_hall" {{ old('paghiusa_hall') ? 'checked' : '' }}> PAGHIUSA HALL</label>
+
       <label class="venue-item"><input type="checkbox" name="e_hub" {{ old('e_hub') ? 'checked' : '' }}> E-HUB</label>
       <label class="venue-item"><input type="checkbox" name="balay_ni_juan" {{ old('balay_ni_juan') ? 'checked' : '' }}> BALAY NI JUAN</label>
       <label class="venue-item"><input type="checkbox" name="ict_avr" {{ old('ict_avr') ? 'checked' : '' }}> ICT AVR</label>

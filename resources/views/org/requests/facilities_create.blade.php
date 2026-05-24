@@ -49,22 +49,13 @@
             <select name="facility_id" required
                     class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
                 <option value="">Select Facility</option>
-                <optgroup label="GSU Facilities">
-                    @foreach($gsuFacilities as $facility)
-                        <option value="{{ $facility->id }}" {{ old('facility_id') == $facility->id ? 'selected' : '' }}>
-                            {{ $facility->name }} ({{ $facility->location }})
-                        </option>
-                    @endforeach
-                </optgroup>
-                @if($orgFacilities->count() > 0)
-                <optgroup label="My Organization Facilities">
-                    @foreach($orgFacilities as $facility)
-                        <option value="{{ $facility->id }}" {{ old('facility_id') == $facility->id ? 'selected' : '' }}>
-                            {{ $facility->name }} ({{ $facility->location }})
-                        </option>
-                    @endforeach
-                </optgroup>
-                @endif
+                @foreach($coreFacilities as $facility)
+                    <option value="{{ $facility->id }}" {{ old('facility_id') == $facility->id ? 'selected' : '' }}>
+                        {{ $facility->name }}
+                    </option>
+                @endforeach
+
+
             </select>
         </div>
 

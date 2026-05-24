@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('form_controls', function (Blueprint $table) {
-            $table->id();
-            $table->string('control_number')->unique();
-            $table->string('form_type'); // 'facilities' or 'repair'
-            $table->timestamps();
+        Schema::table('bookings', function (Blueprint $table) {
+            $table->dropForeign(['facility_id']);
+            $table->dropColumn('facility_id');
         });
     }
 
@@ -24,6 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('form_controls');
+        Schema::table('bookings', function (Blueprint $table) {
+            $table->foreignId('facility_id')->nullable()->constrained()->onDelete('set null');
+        });
     }
 };

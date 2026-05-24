@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+and just   @extends('layouts.admin')
 
 @section('admin-content')
 <div class="fms-card">
@@ -8,7 +8,7 @@
     </div>
 
     @if ($errors->any())
-        <div class="fms-alert-error">
+        <div class="fms-alert-error" style="background-color: #fee2e2; padding: 12px; border-radius: 4px; margin-bottom: 16px;">
             <ul class="list-disc list-inside text-sm">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -49,7 +49,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="fms-label" for="facility_id">Facility</label>
-                <select id="facility_id" name="facility_id" class="fms-input">
+                <select id="facility_id" name="facility_id" class="fms-input" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;">
                     @foreach($facilities as $facility)
                         <option value="{{ $facility->id }}"
                             {{ $booking->facility_id === $facility->id ? 'selected' : '' }}>
@@ -63,29 +63,31 @@
                 $currentStart = $booking->start_time ? $booking->start_time->format('H:i') : '08:00';
                 $currentEnd   = $booking->end_time ? $booking->end_time->format('H:i') : '17:00';
 
-                $details = $booking->additional_details ? json_decode($booking->additional_details, true) : [];
+                $details = is_array($booking->additional_details)
+                    ? $booking->additional_details
+                    : ($booking->additional_details ? json_decode($booking->additional_details, true) : []);
                 $equip   = $details['equipment'] ?? [];
             @endphp
             <div>
                 <label class="fms-label" for="date_activity">Date of activity</label>
                 <input type="date" id="date_activity" name="date_activity" class="fms-input"
-                       value="{{ old('date_activity', $currentDate) }}">
+                       value="{{ old('date_activity', $currentDate) }}" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;">
             </div>
             <div>
                 <label class="fms-label" for="start_time">Start time</label>
                 <input type="time" id="start_time" name="start_time" class="fms-input"
-                       value="{{ old('start_time', $currentStart) }}">
+                       value="{{ old('start_time', $currentStart) }}" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;">
             </div>
             <div>
                 <label class="fms-label" for="end_time">End time</label>
                 <input type="time" id="end_time" name="end_time" class="fms-input"
-                       value="{{ old('end_time', $currentEnd) }}">
+                       value="{{ old('end_time', $currentEnd) }}" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;">
             </div>
         </div>
 
         <div>
             <label class="fms-label" for="purpose">Purpose</label>
-            <textarea id="purpose" name="purpose" rows="3" class="fms-input">{{ old('purpose', $booking->purpose) }}</textarea>
+            <textarea id="purpose" name="purpose" rows="3" class="fms-input" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;">{{ old('purpose', $booking->purpose) }}</textarea>
         </div>
 
         <div>
@@ -119,7 +121,7 @@
                     @endphp
                     <div>
                         <label class="fms-label">{{ $label }}</label>
-                        <input type="number" min="0" name="{{ $field }}" class="fms-input w-24"
+                        <input type="number" min="0" name="{{ $field }}" class="fms-input" style="width: 80px; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;"
                                value="{{ old($field, $currentQty) }}">
                     </div>
                 @endforeach
@@ -128,28 +130,31 @@
 
         <div>
             <label class="fms-label" for="reason">Reason for change (required)</label>
-            <textarea id="reason" name="reason" rows="3" class="fms-input"
+            <textarea id="reason" name="reason" rows="3" class="fms-input" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;"
                       placeholder="Explain why GSU is changing the facility / schedule. This will appear in the requester's notifications.">{{ old('reason') }}</textarea>
         </div>
 
-        <div class="fms-form-actions">
+        <div style="display: flex; gap: 8px;">
             <button type="submit" class="fms-btn-primary">
                 Save changes & notify requester
             </button>
         </div>
     </form>
 
-    <hr class="my-6 border-black">
-
-    <form method="POST" action="{{ route('admin.bookings.cancel', $booking) }}" class="space-y-2"
-          onsubmit="return confirm('Cancel this booking? This cannot be undone.');">
-        @csrf
-        <label class="fms-label" for="cancel_reason">Cancel booking (GSU override)</label>
-        <textarea id="cancel_reason" name="reason" rows="2" class="fms-input"
-                  placeholder="Reason for cancellation (visible to requester)">{{ old('cancel_reason') }}</textarea>
-        <button type="submit" class="fms-btn-danger">
-            Cancel booking
-        </button>
-    </form>
+    <hr style="margin: 24px 0; border: 1px solid #000;">
+    
+    <div>
+        <h2 class="mb-3 text-sm font-semibold text-neutral-800">Cancel booking (GSU override)</h2>
+        <form method="POST" action="{{ route('admin.bookings.cancel', $booking) }}" class="space-y-2"
+              onsubmit="return confirm('Cancel this booking? This cannot be undone.');">
+            @csrf
+            <label class="fms-label" for="cancel_reason">Cancellation reason</label>
+            <textarea id="cancel_reason" name="reason" rows="2" class="fms-input" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;"
+                      placeholder="Reason for cancellation (visible to requester)"></textarea>
+            <button type="submit" class="fms-btn-danger">
+                Cancel booking
+            </button>
+        </form>
+    </div>
 </div>
 @endsection
