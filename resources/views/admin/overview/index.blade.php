@@ -14,7 +14,7 @@
         <div>
             <h1 class="fms-page-title">Monthly Overview</h1>
             <p class="text-xs text-neutral-600">
-                Number of approved/rescheduled bookings this month per facility
+Number of approved/rescheduled bookings this month per facility
                 (custom college / org facilities are grouped under "OTHERS").
             </p>
         </div>
@@ -30,6 +30,9 @@
     </div>
 </div>
 
+@endsection
+
+@push('scripts')
 <script>
 
     (function() {
@@ -48,7 +51,7 @@
         const paddingTop = 20;
         const paddingBottom = 60;
 
-        const maxVal = Math.max(1, Math.max.apply(null, data));
+        const maxVal = Math.max(1, ...data);
         const chartWidth  = width - paddingLeft - paddingRight;
         const chartHeight = height - paddingTop - paddingBottom;
 
@@ -101,4 +104,4 @@
         });
     })();
 </script>
-
+@endpush

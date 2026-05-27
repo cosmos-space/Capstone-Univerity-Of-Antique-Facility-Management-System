@@ -50,11 +50,19 @@
                     class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
                 <option value="">Select Facility</option>
                 @foreach($coreFacilities as $facility)
-                    <option value="{{ $facility->id }}" {{ old('facility_id') == $facility->id ? 'selected' : '' }}>
-                        {{ $facility->name }}
+                    @php
+                        $isUnavailable = in_array($facility->availability_status, ['unavailable', 'maintenance'], true);
+                        $selected = (string) old('facility_id') === (string) $facility->id;
+                    @endphp
+                    <option
+                        value="{{ $facility->id }}"
+                        {{ $selected ? 'selected' : '' }}
+                        {{ $isUnavailable ? 'disabled' : '' }}
+                        style="{{ $isUnavailable ? 'color:#9CA3AF;' : '' }}"
+                    >
+                        {{ $facility->name }}{{ $isUnavailable ? ' (Unavailable)' : '' }}
                     </option>
                 @endforeach
-
 
             </select>
         </div>

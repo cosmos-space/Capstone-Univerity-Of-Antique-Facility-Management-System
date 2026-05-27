@@ -32,10 +32,22 @@ class FormController extends Controller
             ->orderBy('name')
             ->get();
 
+        $presidents = Signatory::where('type', 'org_president')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
 
+        $advisers = Signatory::where('type', 'org_adviser')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
 
-
-        return view('org.requests.facilities_create', compact('coreFacilities', 'user'));
+        return view('org.requests.facilities_create', compact(
+            'coreFacilities',
+            'user',
+            'presidents',
+            'advisers'
+        ));
 
     }
 
@@ -64,7 +76,11 @@ class FormController extends Controller
 
         $notedDatetime = $notedName ? now()->format('Y-m-d H:i:s') : null;
 
-        $response = $this->handleStoreFacilities($request);
+        // handleStoreFacilities signature expects (StoreFacilitiesUtilizationRequest $request, int $facilityId)
+        // but the org form route submits without route params, so facilityId is inside the request.
+        $facilityId = (int) $request->input('facility_id');
+        $response = $this->handleStoreFacilities($request, $facilityId);
+
 
         $submission = FormSubmission::where('requester_id', $user->id)
             ->where('type', 'facilities_utilization')
@@ -107,4 +123,3 @@ class FormController extends Controller
         return view('org.requests.facilities_index', compact('submissions'));
     }
 }
-

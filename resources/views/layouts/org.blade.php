@@ -18,8 +18,8 @@
             [
                 'heading' => 'Requests',
                 'links' => [
-                    ['label' => 'My requests', 'route' => 'org.requests.facilities.index', 'routes' => 'org.requests.facilities.*'],
-                    ['label' => 'New request', 'route' => 'org.requests.facilities.create', 'routes' => 'org.requests.facilities.*'],
+                    ['label' => 'My requests', 'route' => 'org.requests.facilities.index', 'routes' => 'org.requests.facilities.index'],
+                    ['label' => 'New request', 'route' => 'org.requests.facilities.create', 'routes' => 'org.requests.facilities.create'],
                 ],
             ],
         ],
@@ -30,4 +30,4 @@
         @yield('org-content')
     </section>
 </div>
-@endsection 
+@endsection

@@ -8,6 +8,10 @@
         Submit a request for facility and equipment usage. Date of request will be recorded automatically after submission.
     </p>
 
+
+
+
+
     @if($collegeFacilities->isNotEmpty())
         <div class="mb-4 p-3 bg-blue-50 text-blue-800 border border-blue-200 rounded">
             <h2 class="font-semibold text-md mb-2">Approved College Facilities</h2>
@@ -18,6 +22,7 @@
             </ul>
         </div>
     @endif
+
 
     @if ($errors->any())
         <div class="mb-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded">

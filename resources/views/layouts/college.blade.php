@@ -26,8 +26,8 @@
             [ 
                 'heading' => 'Requests',
                 'links' => [
-                    ['label' => 'My requests', 'route' => 'college.requests.index'],
-                    ['label' => 'New request', 'route' => 'college.requests.facilities.create', 'routes' => 'college.requests.facilities.*'],
+                    ['label' => 'My requests', 'route' => 'college.requests.index', 'routes' => 'college.requests.index'],
+                    ['label' => 'New request', 'route' => 'college.requests.facilities.create', 'routes' => 'college.requests.facilities.create'],
                 ],
             ],
         ],
