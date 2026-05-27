@@ -44,7 +44,18 @@
     }
 
     .fms-sidebar {
-        @apply w-64 shrink-0 border-r border-black bg-white flex flex-col;
+        @apply w-64 shrink-0 border-r border-black flex flex-col;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        background-color: #111111;
+    }
+
+    .fms-sidebar::-webkit-scrollbar {
+        display: none;
     }
 
     .fms-sidebar-header {
@@ -202,6 +213,494 @@
     .fms-form-actions {
         @apply flex flex-wrap items-center justify-end gap-3 border-t border-black pt-6;
     }
+
+    .fms-public-layout {
+        @apply grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-8 items-start mb-8 w-full;
+    }
+
+    /* ── LEFT SIDEBAR (Upcoming Bookings) ── */
+    .fms-sidebar-section {
+        @apply flex flex-col gap-4;
+    }
+
+    .fms-section-title {
+        @apply text-sm font-bold uppercase tracking-wide border-b border-black pb-2 mb-2 text-black;
+    }
+
+    .fms-booking-card {
+        @apply flex border border-black bg-white transition-colors duration-200 hover:bg-neutral-50;
+    }
+
+    .fms-booking-date-badge {
+        @apply bg-black text-white flex flex-col items-center justify-center w-20 p-3 font-semibold shrink-0;
+    }
+
+    .fms-booking-date-badge span:first-child {
+        @apply text-xl leading-none mb-1;
+    }
+
+    .fms-booking-date-badge span:last-child {
+        @apply text-[11px] uppercase tracking-wider;
+    }
+
+    .fms-booking-card-content {
+        @apply p-4 flex flex-col justify-center;
+    }
+
+    .fms-booking-card-content h4 {
+        @apply text-[13px] font-bold text-black mb-1 leading-tight;
+    }
+
+    .fms-booking-card-content p {
+        @apply text-[11px] text-neutral-600 leading-tight line-clamp-2;
+    }
+
+    /* ── RIGHT SIDE (Calendar Grid) ── */
+    .fms-calendar-header-wrapper {
+        @apply flex justify-between items-center mb-6;
+    }
+
+    .fms-calendar-grid-header {
+        @apply grid grid-cols-7 text-center text-[12px] font-bold uppercase tracking-wider border-b border-black pb-2 mb-4 text-black;
+    }
+
+    .fms-calendar-grid-body {
+        @apply grid grid-cols-7 gap-2;
+    }
+
+    .fms-calendar-cell {
+        @apply aspect-square border border-black flex flex-col bg-white transition-colors duration-200 p-0 relative;
+    }
+
+    .fms-calendar-cell:hover {
+        @apply bg-neutral-50;
+    }
+
+    .fms-calendar-cell.is-empty {
+        @apply bg-neutral-50 border-transparent pointer-events-none;
+    }
+
+    /* Day Number Box inside cell */
+    .fms-calendar-day-num {
+        @apply absolute top-0 left-0 text-[11px] font-bold border-r border-b border-black bg-white w-7 h-7 flex items-center justify-center;
+    }
+
+    .fms-calendar-day-num.active {
+        @apply bg-black text-white;
+    }
+
+    /* Event Badge inside cell */
+    .fms-calendar-event-link {
+        @apply mt-auto w-full block border-t border-black bg-neutral-100 text-[10px] font-bold text-black px-2 py-1.5 hover:bg-black hover:text-white transition-colors truncate text-left;
+    }
+
+    /* ── DATA TABLES (For Bookings/Unavailable) ── */
+    .fms-data-table {
+        @apply w-full border-collapse text-xs text-left border border-black;
+    }
+
+    .fms-data-table th {
+        @apply bg-neutral-100 border-b border-r border-black last:border-r-0 px-3 py-2 font-bold text-black;
+    }
+
+    .fms-data-table td {
+        @apply border-b border-r border-black last:border-r-0 px-3 py-2 text-neutral-800;
+    }
+
+    /*
+       ==========================================================================
+       UNIVERSITY OF ANTIQUE ─ ADMIN PORTAL UI CUSTOM OVERRIDES
+       ==========================================================================
+    */
+
+    /* ── 1. GLOBAL LAYOUT HEADER (BLACK MONOCHROME TRANSFORMATION) ── */
+    nav,
+    header,
+    .navbar,
+    .top-bar,
+    div[class*="bg-white"][class*="border-b"] {
+        background: #111111 !important;
+        background-color: #111111 !important;
+        border-bottom: 1px solid #222222 !important;
+    }
+
+    nav a, nav span, nav div,
+    header a, header span, header div,
+    .navbar a, .navbar span,
+    div[class*="bg-white"][class*="border-b"] a,
+    div[class*="bg-white"][class*="border-b"] span,
+    div[class*="bg-white"][class*="border-b"] div {
+        color: #ffffff !important;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    nav button,
+    header button,
+    .navbar button,
+    div[class*="bg-white"][class*="border-b"] button {
+        background: none !important;
+        border: 1px solid #ffffff !important;
+        color: #ffffff !important;
+        padding: 6px 14px !important;
+        border-radius: 2px !important;
+        transition: all 0.2s ease !important;
+    }
+
+    nav button:hover,
+    header button:hover,
+    .navbar button:hover,
+    div[class*="bg-white"][class*="border-b"] button:hover {
+        background: #ffffff !important;
+        color: #111111 !important;
+    }
+
+    /* ── 2. DYNAMIC HEADER BRANDING BLOCK (CIRCULAR LOGO + TWO-LINE STACK) ── */
+    .header-brand-container {
+        display: flex !important;
+        align-items: center !important;
+        gap: 14px !important;
+        text-align: left !important;
+    }
+
+    .ua-header-logo {
+        height: 44px !important;
+        width: 44px !important;
+        border-radius: 50% !important;
+        object-fit: cover !important;
+        background-color: #ffffff !important;
+    }
+
+    .header-text-stack {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+    }
+
+    .brand-title {
+        font-size: 16px !important;
+        font-weight: 700 !important;
+        color: #ffffff !important;
+        line-height: 1.2 !important;
+        letter-spacing: 0.3px !important;
+    }
+
+    .brand-subtitle {
+        font-size: 10px !important;
+        font-weight: 500 !important;
+        color: #aaaaaa !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.8px !important;
+        margin-top: 2px !important;
+        line-height: 1.2 !important;
+    }
+
+    /* ── 3. SYSTEM CONTROLS & DUPLICATE FOOTER CLEANUP ── */
+    [class*="refresh"],
+    [id*="refresh"],
+    button[onclick*="reload"],
+    a[onclick*="reload"],
+    .refresh-btn,
+    /* --- ENHANCED TARGETING TO PURGE "BACK" BUTTONS --- */
+    a[href*="back"],
+    a[href*="previous"],
+    a[class*="back"],
+    button[class*="back"],
+    button[onclick*="back"],
+    button[onclick*="history"],
+    .back-btn,
+    .back-button,
+    /* Suppress layout footers */
+    footer:not(.admin-custom-footer),
+    body > footer,
+    .layout-footer {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        height: 0 !important;
+        width: 0 !important;
+        overflow: hidden !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* ── 4. SIDEBAR PROFILE BRIGHTNESS & SLATE HOVER DESIGN ── */
+    .fms-shell > :first-child > div:first-child,
+    .fms-shell > aside > div:first-child,
+    div[class*="sidebar"] > div:first-child {
+        background: #111111 !important;
+        background-color: #111111 !important;
+        border-bottom: 1px solid #222222 !important;
+    }
+
+    .fms-shell > :first-child > div:first-child *,
+    .fms-shell > aside > div:first-child *,
+    div[class*="sidebar"] > div:first-child * {
+        color: #ffffff !important;
+    }
+
+    .fms-shell > :first-child > div:first-child div,
+    .fms-shell > :first-child > div:first-child p,
+    .fms-shell > :first-child > div:first-child span {
+        color: #cccccc !important;
+    }
+
+    .fms-shell > :first-child a:hover,
+    .fms-shell > aside a:hover,
+    div[class*="sidebar"] a:hover {
+        background-color: #2c2c2c !important;
+        color: #ffffff !important;
+        border-radius: 4px !important;
+        transition: background-color 0.15s ease !important;
+    }
+
+    /* ── 5. CONTAINER MAXIMIZATION & STABLE BASELINE FOOTER ── */
+    .fms-shell {
+        display: flex !important;
+        min-height: calc(100vh - 70px) !important;
+        width: 100% !important;
+    }
+
+    .fms-main {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        background: #ffffff !important;
+    }
+
+    .fms-content-wrapper {
+        flex: 1 !important;
+    }
+
+    .admin-custom-footer {
+        background: #ffffff !important;
+        border-top: 1px solid #e6e6e6 !important;
+        padding: 24px 40px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        margin-top: auto !important;
+    }
+
+    .admin-custom-footer p {
+        margin: 0 !important;
+        font-size: 12px !important;
+        color: #888888 !important;
+        font-family: 'DM Sans', sans-serif !important;
+    }
+
+    .admin-custom-footer .footer-links a {
+        color: #111111 !important;
+        font-size: 12px !important;
+        text-decoration: none !important;
+        margin-left: 16px !important;
+        font-weight: 500 !important;
+    }
+
+    .admin-custom-footer .footer-links a:hover {
+        text-decoration: underline !important;
+    }
+
+    /* ── 6. ADMIN DASHBOARD SPECIFIC STYLES ── */
+    .admin-dash-header {
+        margin-bottom: 40px;
+    }
+
+    .admin-dash-header h1 {
+        font-family: 'DM Serif Display', serif;
+        font-size: 32px;
+        color: #111111;
+        margin: 0 0 8px 0;
+        font-weight: 400;
+    }
+
+    .admin-dash-header p {
+        font-size: 14px;
+        color: #666666;
+        margin: 0;
+    }
+
+    .quick-access-section h2 {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #808080;
+        margin-bottom: 16px;
+        border-bottom: 1px solid #E6E6E6;
+        padding-bottom: 8px;
+    }
+
+    .admin-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+    }
+
+    .admin-card {
+        background: #ffffff;
+        border: 1px solid #E6E6E6;
+        padding: 24px;
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.2s ease;
+    }
+
+    .admin-card:hover {
+        border-color: #111111;
+        background: #FAFAFA;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+    }
+
+    .admin-card h3 {
+        font-size: 14px;
+        font-weight: 600;
+        color: #111111;
+        margin: 0 0 8px 0;
+    }
+
+    .admin-card p {
+        font-size: 12px;
+        color: #808080;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    /* ── 7. MONTHLY OVERVIEW BLADE BREAKOUT RESCUE POSITIONER ── */
+    .fms-shell ~ div,
+    nav ~ div:not(.fms-shell) {
+        position: absolute !important;
+        top: 70px !important;                 /* Safely bounds the chart box below your top layout header */
+        left: 256px !important;               /* Offsets horizontally past the 64w black menu bar */
+        width: calc(100% - 256px) !important; /* Spans perfectly across your white dashboard workspace window */
+        height: calc(100vh - 140px) !important;/* Constraints chart canvas bounds above bottom footer line */
+        background: #ffffff !important;
+        padding: 32px 40px !important;
+        box-sizing: border-box !important;
+        z-index: 10 !important;               /* Embeds cleanly into the main center layout perspective */
+        overflow-y: auto !important;          /* Keeps scrolling fluid inside the workspace boundary if content clips */
+    }
+
+
+}
+
+/* ── NOTIFICATION DROPDOWN STYLES ── */
+.notification-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.notification-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: inherit;
+    font-family: inherit;
+    color: inherit;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.notification-dropdown {
+    position: absolute;
+    top: 150%;
+    right: 0;
+    width: 340px;
+    background: #ffffff;
+    border: 1px solid #E6E6E6;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    color: #111111;
+    text-align: left;
+    border-radius: 4px;
+}
+
+.notification-dropdown.hidden {
+    display: none;
+}
+
+.dropdown-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid #E6E6E6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dropdown-header h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.mark-read-btn {
+    font-size: 12px;
+    color: #666666;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.mark-read-btn:hover {
+    color: #111111;
+    text-decoration: underline;
+}
+
+.dropdown-body {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    padding: 14px 16px;
+    border-bottom: 1px solid #F5F5F5;
+    transition: background 0.2s;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item.unread {
+    background-color: #FAFAFA;
+    border-left: 3px solid #111111;
+}
+
+.notification-item:hover {
+    background-color: #F5F5F5;
+}
+
+.notif-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+}
+
+.notif-msg {
+    font-size: 12px;
+    color: #666666;
+    margin: 0 0 8px 0;
+    line-height: 1.4;
+}
+
+.notif-time {
+    font-size: 11px;
+    color: #999999;
+}
+
+.empty-notif {
+    padding: 32px 16px;
+    text-align: center;
+    color: #808080;
+    font-size: 13px;
 }
 
 /* Legacy views: force monochrome on colored Tailwind utilities */
@@ -274,3 +773,365 @@
         border-color: #000 !important;
     }
 }
+
+/* ==========================================================================
+   CALENDAR / PUBLIC PAGE STYLES (Extracted from calendar.blade.php)
+==========================================================================
+*/
+:root{
+  --primary:#111111;
+  --primary-dark:#000000;
+  --primary-light:#F2F2F2;
+  --bg:#ffffff;
+  --bg2:#FAFAFA;
+  --bg3:#F5F5F5;
+  --text:#111111;
+  --text2:#4D4D4D;
+  --text3:#808080;
+  --border:#CCCCCC;
+  --border2:#E6E6E6;
+  --sans:'DM Sans',sans-serif;
+  --display:'DM Serif Display',serif;
+  --r-sm:4px;
+  --r-md:8px;
+  --r-lg:12px;
+  --r-xl:16px;
+  --shadow-xs:0 1px 2px rgba(0,0,0,.05);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.07);
+  --shadow-md:0 4px 16px rgba(0,0,0,.1);
+}
+
+/* ── UNIFIED MAIN HEADER (Matches Image 2 Structure) ── */
+.main-header{background:var(--primary);color:#fff;padding:0 48px;height:80px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm)}
+.header-left{display:flex;align-items:center;gap:16px}
+/* Updated for Circular Logo */
+.header-logo{width:54px;height:54px;object-fit:cover;border-radius:50%}
+.header-titles{display:flex;flex-direction:column;justify-content:center}
+.ht-uni{font-family:var(--display);font-size:22px;line-height:1.1;letter-spacing:0.5px}
+.ht-sys{font-size:12px;color:#ccc;font-weight:500;margin-top:2px;letter-spacing:0.3px;text-transform:uppercase}
+
+.header-right{display:flex;align-items:center;gap:32px}
+.nav-links{display:flex;gap:24px}
+.nav-link{font-size:13px;color:#ccc;cursor:pointer;transition:color .15s;font-weight:500}
+.nav-link:hover{color:#fff}
+.nav-actions{display:flex;gap:10px;align-items:center}
+.btn-ghost{padding:7px 16px;border:1px solid rgba(255,255,255,0.4);border-radius:var(--r-md);font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:#fff;transition:all .15s}
+.btn-ghost:hover{background:rgba(255,255,255,0.1);border-color:#fff}
+.btn-solid{padding:7px 18px;border:1px solid #fff;border-radius:var(--r-md);font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:var(--primary);transition:all .15s}
+.btn-solid:hover{background:#e6e6e6}
+
+/* ── AUTH BAR ── */
+.auth-bar{background:var(--bg2);border-bottom:1px solid var(--border2);padding:8px 48px;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text)}
+.auth-bar a{color:var(--primary);font-weight:600;margin-left:12px;text-decoration:underline}
+
+/* ── HERO CAROUSEL (Matches Image 3 Structure) ── */
+.hero-carousel{position:relative;width:100%;height:460px;background:#000;overflow:hidden;border-bottom:1px solid var(--border2)}
+.slide{position:absolute;top:0;left:0;width:100%;height:100%;background-size:cover;background-position:center;opacity:0;transition:opacity 1.2s ease-in-out;filter:grayscale(100%)}
+.slide.active{opacity:0.65}
+.hero-overlay{position:absolute;bottom:0;left:0;width:100%;padding:120px 48px 40px;background:linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);display:flex;flex-direction:column;pointer-events:none}
+.hero-overlay h2{font-family:var(--display);color:#fff;font-size:36px;font-weight:400;line-height:1.1;margin-bottom:6px}
+.hero-overlay p{color:#ccc;font-size:15px;letter-spacing:0.5px}
+
+/* ── FEATURES ── */
+.section{padding:60px 48px;max-width:1040px;margin:0 auto}
+.section-head{text-align:center;margin-bottom:42px}
+.section-head h2{font-family:var(--display);font-size:28px;font-weight:400;margin-bottom:10px}
+.section-head p{font-size:14px;color:var(--text2);line-height:1.75}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:768px){.feat-grid{grid-template-columns:1fr}}
+.feat-card{background:#fff;border:1px solid var(--border2);border-radius:var(--r-xl);padding:24px;box-shadow:var(--shadow-xs);transition:box-shadow .2s,transform .2s}
+.feat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.feat-ico{width:44px;height:44px;border-radius:var(--r-md);background:var(--bg3);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.feat-ico svg{width:22px;height:22px;stroke:var(--primary);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.feat-card h3{font-size:14px;font-weight:600;margin-bottom:7px}
+.feat-card p{font-size:12px;color:var(--text2);line-height:1.7}
+
+/* ── STATS BAND ── */
+.stats-band{background:var(--bg3);border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);padding:48px}
+.stats-inner{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;max-width:760px;margin:0 auto;text-align:center}
+@media(max-width:640px){.stats-inner{grid-template-columns:repeat(2,1fr)}}
+.stat-num{font-family:var(--display);font-size:34px;font-weight:400;color:var(--primary);margin-bottom:6px}
+.stat-lbl{font-size:12px;color:var(--text2);font-weight:600;letter-spacing:.3px;text-transform:uppercase}
+
+/* ── STRICT MONOCHROME PORTRAIT PORTAL SECTION ── */
+/* ── STRICT MONOCHROME PORTRAIT PORTAL SECTION ── */
+.ua-portal-section {
+  padding: 60px 48px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.ua-portal-grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 64px;
+  align-items: start;
+}
+
+@media (max-width: 992px) {
+  .ua-portal-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+}
+
+.ua-text-column {
+  padding-top: 8px;
+}
+
+.ua-text-column h2 {
+  font-family: var(--display, 'DM Serif Display', serif);
+  font-size: 38px;
+  color: var(--primary);
+  margin-bottom: 16px;
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.ua-text-column p {
+  font-size: 14.5px;
+  color: var(--text2);
+  line-height: 1.8;
+  text-align: left;
+}
+
+.ua-portrait-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .ua-portrait-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ua-portrait-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  padding: 32px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: center;
+  text-decoration: none;
+  color: var(--text);
+  min-height: 240px;
+  transition: all 0.2s ease;
+}
+
+.ua-portrait-card:hover {
+  border-color: var(--primary);
+  background: var(--bg2);
+}
+
+.ua-card-text h3 {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--primary);
+}
+
+.ua-card-text p {
+  font-size: 11px;
+  color: var(--text3);
+  line-height: 1.5;
+}
+
+.ua-simple-btn {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--primary);
+  border-bottom: 1px solid var(--primary);
+  padding-bottom: 2px;
+  align-self: center;
+  margin-top: 24px;
+  transition: opacity 0.2s;
+}
+
+.ua-portrait-card:hover .ua-simple-btn {
+  opacity: 0.6;
+}
+
+/* ── MINIMALIST HORIZONTAL RECTANGLE FACILITIES GRID ── */
+.ua-facilities-section {
+  padding: 60px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ua-section-header {
+  margin-bottom: 32px;
+  padding: 0 4px;
+}
+
+.ua-section-header h2 {
+  font-family: var(--display, 'DM Serif Display', serif);
+  font-size: 32px;
+  color: var(--primary);
+  margin-bottom: 8px;
+  font-weight: 400;
+}
+
+.ua-section-header p {
+  font-size: 14px;
+  color: var(--text2);
+}
+
+.ua-facilities-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 992px) {
+  .ua-facilities-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .ua-facilities-grid {
+    grid-template-columns: 1fr;
+  }
+  .ua-facilities-section {
+    padding: 40px 16px;
+  }
+}
+
+.ua-facility-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  padding: 24px;
+  box-sizing: border-box;
+  transition: all 0.15s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.ua-facility-card:hover {
+  border-color: var(--primary);
+  background: var(--bg2);
+}
+
+.ua-facility-card h4 {
+  font-size: 13.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--primary);
+  letter-spacing: 0.5px;
+  margin: 0 0 8px 0;
+}
+
+.ua-facility-desc {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media (max-width: 868px) {
+  .ua-facilities-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .ua-facilities-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ua-facility-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  padding: 32px 24px;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 140px;
+}
+
+.ua-facility-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.ua-facility-card h4 {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--primary);
+  letter-spacing: 0.5px;
+  margin: 0 0 10px 0;
+}
+
+.ua-facility-desc {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── CALENDAR SECTION ── */
+.cal-section{padding:60px 48px;background:var(--bg3);border-top:1px solid var(--border2)}
+.cal-inner{max-width:1040px;margin:0 auto}
+.cal-wrap{display:grid;grid-template-columns:1fr 280px;gap:24px;align-items:start}
+@media(max-width:900px){.cal-wrap{grid-template-columns:1fr}}
+.cal-card{background:#fff;border:1px solid var(--border2);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-xs)}
+.cal-header{padding:16px 20px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between}
+.cal-month{font-size:15px;font-weight:600}
+.cal-nav-btn{width:32px;height:32px;border:1px solid var(--border);border-radius:var(--r-md);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:all .15s;font-size:14px}
+.cal-nav-btn:hover{background:var(--bg2)}
+.cal-nav-pair{display:flex;gap:6px}
+.cal-grid-head{display:grid;grid-template-columns:repeat(7,1fr);padding:10px 16px 6px}
+.cal-dh{font-size:10px;font-weight:600;color:var(--text3);text-align:center;text-transform:uppercase;letter-spacing:.5px}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:6px 12px 14px}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;border-radius:50%;cursor:default;color:var(--text2);transition:all .15s;position:relative}
+.cal-day.other{color:var(--border)}
+.cal-day.has-event{background:var(--primary-light);color:var(--primary);font-weight:600;cursor:pointer}
+.cal-day.has-event:hover{background:#E6E6E6}
+.cal-day.today{background:var(--primary);color:#fff;font-weight:600}
+.cal-day.today.has-event{background:var(--primary);color:#fff}
+
+.cal-day.today:hover,
+.cal-day.today.has-event:hover{background:var(--primary-dark);color:#fff}
+.cal-day.has-event::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--primary)}
+.cal-day.today::after{background:#fff}
+
+/* ── EVENTS SIDEBAR ── */
+.events-card{background:#fff;border:1px solid var(--border2);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-xs)}
+.events-header{padding:14px 18px;border-bottom:1px solid var(--border2)}
+.events-header h4{font-size:13px;font-weight:600}
+.events-list{padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+.event-row{display:flex;gap:10px;align-items:flex-start;padding-bottom:10px;border-bottom:1px solid var(--border2)}
+.event-row:last-child{border-bottom:none;padding-bottom:0}
+.event-date-badge{background:var(--primary-light);color:var(--primary);font-size:11px;font-weight:600;padding:3px 8px;border-radius:var(--r-sm);white-space:nowrap;min-width:32px;text-align:center;flex-shrink:0;margin-top:1px}
+.event-facility{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px}
+.event-time{font-size:11px;color:var(--text2)}
+.event-purpose{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.empty-state{padding:24px 16px;text-align:center;color:var(--text3);font-size:12px}
+
+/* ── FOOTER ── */
+.footer{background:var(--primary);padding:48px;color:#fff;display:grid;grid-template-columns:1fr 1fr;gap:48px}
+/* Updated for Circular Logo */
+.footer-left img{width:64px;height:64px;margin-bottom:16px;filter:brightness(0) invert(1);border-radius:50%;object-fit:cover}
+.footer h4{font-family:var(--display);font-size:20px;margin-bottom:8px}
+.footer p{font-size:12px;color:#ccc;line-height:1.6}
+.footer-right{text-align:right}
+.footer-bottom{grid-column:1/-1;border-top:1px solid #333;padding-top:24px;margin-top:24px;display:flex;justify-content:space-between;font-size:11px;color:#999}

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Traits;
 use App\Http\Requests\StoreFacilitiesUtilizationRequest;
 use App\Models\Booking;
 use App\Models\Facility;
-use App\Models\Facility;
 use App\Models\FormSubmission;
 use App\Services\NotificationService;
 use Illuminate\Support\Facades\Auth;

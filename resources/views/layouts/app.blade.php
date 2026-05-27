@@ -32,7 +32,7 @@
                         @endif
                     </a>
 
-                    <span class="text-neutral-600"> 
+                    <span class="text-neutral-600">
                         {{ optional(auth()->user())->name }}
                         <span class="text-neutral-400">·</span>
                         {{ str_replace('_', ' ', optional(auth()->user())->role ?? 'user') }}

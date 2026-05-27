@@ -45,9 +45,18 @@
         @endforeach
     </nav>
 
-    @if ($footer)
-        <div class="fms-sidebar-footer">
-            {!! $footer !!}
-        </div>
-    @endif
+    <div class="mt-auto border-t border-black p-4 text-sm flex flex-col gap-4 bg-white">
+        @if ($footer)
+            <div class="leading-tight text-neutral-800">
+                {!! $footer !!}
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('logout') }}" class="m-0">
+            @csrf
+            <button type="submit" class="text-left w-full text-black font-medium hover:underline flex items-center">
+                Logout
+            </button>
+        </form>
+    </div>
 </aside>
