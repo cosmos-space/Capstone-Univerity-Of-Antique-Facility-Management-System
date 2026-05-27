@@ -8,6 +8,10 @@
         Submit a request for facility and equipment usage. Date of request will be recorded automatically after submission.
     </p>
 
+
+
+
+
     {{-- 1. SAFELY check for Approved College Facilities --}}
     @if(isset($collegeFacilities) && $collegeFacilities->isNotEmpty())
         <div class="mb-4 p-3 bg-blue-50 text-blue-800 border border-blue-200 rounded">
@@ -19,6 +23,7 @@
             </ul>
         </div>
     @endif
+
 
     @if ($errors->any())
         <div class="mb-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded">

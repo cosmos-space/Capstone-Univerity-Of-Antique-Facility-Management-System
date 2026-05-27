@@ -132,11 +132,19 @@ All routes are defined in the web route file and use session-based authenticatio
 | POST | `/org/requests/facilities` | `org.requests.facilities.store` | `Org\FormController@storeFacilities` | Submit new request |
 | GET | `/org/requests/facilities/index` | `org.requests.facilities.index` | `Org\FormController@indexFacilities` | List own utilization requests |
 
+### GSU High-priority Direct Booking Routes (Admin)
+
+| Method | URI | Route Name | Controller | Description |
+|---|---|---|---|---|
+| GET | `/admin/bookings/create-direct` | `admin.bookings.create-direct` | `Admin\BookingController@createDirect` | Show direct booking form (GSU override) |
+| POST | `/admin/bookings/store-direct` | `admin.bookings.store-direct` | `Admin\BookingController@storeDirect` | Persist direct booking |
+
 ### Development/Testing Routes (Temporary)
 
 | Method | URI | Description |
 |---|---|---|
 | GET | `/make-admin` | Create/update admin test user (`admin@example.com`) |
+
 | GET | `/make-college-staff` | Create/update college staff test user (`college@example.com`) |
 | GET | `/make-org-staff` | Create/update org staff test user (`org@example.com`) |
 | GET | `/make-user` | Create/update viewer test user (`user@example.com`) |

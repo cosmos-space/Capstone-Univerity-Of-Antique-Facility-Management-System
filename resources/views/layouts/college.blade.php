@@ -27,8 +27,8 @@
             [
                 'heading' => 'Requests',
                 'links' => [
-                    ['label' => 'My requests', 'route' => 'college.requests.index'],
-                    ['label' => 'New request', 'route' => 'college.requests.facilities.create', 'routes' => 'college.requests.facilities.*'],
+                    ['label' => 'My requests', 'route' => 'college.requests.index', 'routes' => 'college.requests.index'],
+                    ['label' => 'New request', 'route' => 'college.requests.facilities.create', 'routes' => 'college.requests.facilities.create'],
                 ],
             ],
         ],
@@ -50,6 +50,7 @@
         </footer>
     </section>
 </div>
+<<<<<<< HEAD
 
 {{-- Dynamic Brand Transformer Script ── Injects the circular logo --}}
 <script>
@@ -80,3 +81,6 @@
   });
 </script>
 @endsection
+=======
+@endsection
+>>>>>>> 731a0fa6094b969b204ccf8edcd7991d7877a1c8

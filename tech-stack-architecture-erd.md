@@ -442,7 +442,118 @@ Capstone-Univerity-Of-Antique-Facility-Management-System/
 
 ### Text-Based ERD
 
+
+```mermaid
+classDiagram
+    class User {
+        +bigint id
+        +string name
+        +string email
+        +string role
+        +string college_name
+        +string organization_name
+    }
+
+    class Facility {
+        +bigint id
+        +string name
+        +string location
+        +string owner_type
+        +string owner_college
+        +text description
+        +bool is_active
+        +string availability_status
+    }
+
+    class Booking {
+        +bigint id
+        +datetime start_time
+        +datetime end_time
+        +string requester_type
+        +string requester_unit
+        +string status
+        +text purpose
+        +text additional_details
+        +string booking_code
+    }
+
+    class MaintenanceTicket {
+        +bigint id
+        +string request_method
+        +string status
+        +text issue_description
+        +text admin_remarks
+        +datetime requested_at
+        +datetime approved_at
+        +datetime completed_at
+    }
+
+    class StaffAssignment {
+        +bigint id
+        +datetime assigned_at
+        +datetime preferred_time
+    }
+
+    class MaintenanceLog {
+        +bigint id
+        +text work_done
+        +text remarks
+        +datetime logged_at
+        +string staff_signature
+    }
+
+    class FormControl {
+        +bigint id
+        +string control_number
+        +string form_type
+    }
+
+    class FormSubmission {
+        +bigint id
+        +string type
+        +string requester_type
+        +string requester_unit
+        +string status
+        +json payload
+    }
+
+    class Notification {
+        +bigint id
+        +string type
+        +string title
+        +text message
+        +json data
+        +bool is_read
+    }
+
+    class Equipment {
+        +bigint id
+        +string name
+        +string category
+        +int total_quantity
+        +bool is_active
+    }
+
+    User "1" --> "*" Booking : requester_id
+    User "1" --> "*" MaintenanceTicket : requester_id
+    User "1" --> "*" StaffAssignment : staff_id
+    User "1" --> "*" MaintenanceLog : staff_id
+    User "1" --> "*" Notification : user_id
+    User "1" --> "*" FormSubmission : requester_id
+
+    Facility "1" --> "*" Booking : facility_id
+    Facility "1" --> "*" MaintenanceTicket : facility_id
+    Booking "1" --> "*" MaintenanceTicket : booking_id (nullable)
+
+    MaintenanceTicket "1" --> "*" StaffAssignment : maintenance_ticket_id
+    MaintenanceTicket "1" --> "*" MaintenanceLog : maintenance_ticket_id
+
+    note for FormSubmission "Facilities utilization / repair form data stored as JSON payload"
+    note for Equipment "Equipment quantities are stored in JSON payload (not via FK in schema)"
+    note for FormControl "Generates sequential GSU control numbers for forms"
 ```
+
+
 ┌─────────────────────────────────┐
 │              USER               │
 ├─────────────────────────────────┤

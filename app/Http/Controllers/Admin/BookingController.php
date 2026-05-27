@@ -85,7 +85,13 @@ class BookingController extends Controller
         $end   = $current->copy()->endOfMonth();
 
         $bookings = Booking::with(['facilities', 'requester'])
-            ->whereBetween('start_time', [$start, $end])
+            ->where(function ($query) use ($start, $end) {
+                $query->whereBetween('start_time', [$start, $end])
+                    ->orWhere(function ($query) use ($start, $end) {
+                        $query->where('start_time', '<', $start)
+                            ->where('end_time', '>', $start);
+                    });
+            })
             ->whereIn('status', ['booked', 'rescheduled'])
             ->orderBy('start_time')
             ->get();

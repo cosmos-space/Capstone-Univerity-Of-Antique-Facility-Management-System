@@ -39,12 +39,11 @@ class StoreFacilitiesUtilizationRequest extends FormRequest
                         $query->where('facility_id', $value);
                     })
                     ->where(function ($query) use ($startDateTime, $endDateTime) {
-                        $query->where(function ($q) use ($startDateTime, $endDateTime) {
-                            $q->where('start_time', '<', $endDateTime)
+                        // overlap if booking starts before our end AND booking ends after our start
+                        $query->where('start_time', '<', $endDateTime)
                               ->where('end_time', '>', $startDateTime);
-                        });
                     })
-                    ->where('status', 'booked')
+                    ->whereIn('status', ['booked'])
                     ->exists();
 
                     if ($isOverlapping) {
