@@ -392,7 +392,7 @@ input,select,textarea,button{font-family:inherit}
 {{-- MAIN HEADER --}}
 <header class="main-header">
   <div class="header-left">
-    <img src="{{ asset('UA-logo.png') }}" alt="University of Antique Logo" class="header-logo">
+    <img src="{{ asset('image\facilities\UA-logo.png') }}" alt="University of Antique Logo" class="header-logo">
     <div class="header-titles">
       <span class="ht-uni">University of Antique</span>
       <span class="ht-sys">Facility Management System</span>

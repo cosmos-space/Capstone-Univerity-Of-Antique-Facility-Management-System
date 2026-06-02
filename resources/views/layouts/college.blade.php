@@ -50,7 +50,7 @@
         </footer>
     </section>
 </div>
-<<<<<<< HEAD
+
 
 {{-- Dynamic Brand Transformer Script ── Injects the circular logo --}}
 <script>
@@ -80,7 +80,7 @@
       }
   });
 </script>
+
+
 @endsection
-=======
-@endsection
->>>>>>> 731a0fa6094b969b204ccf8edcd7991d7877a1c8
+
