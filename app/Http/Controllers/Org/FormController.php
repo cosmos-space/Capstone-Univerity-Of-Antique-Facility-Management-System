@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class FormController extends Controller
-{ 
+{
     use SubmitsFacilitiesForm;
 
     public function __construct(protected NotificationService $notifications)
