@@ -122,4 +122,28 @@ class FormController extends Controller
 
         return view('org.requests.facilities_index', compact('submissions'));
     }
+
+    /**
+     * Show a single facilities utilization request for this org staff user.
+     */
+    public function showFacilities(FormSubmission $submission)
+    {
+        $user = Auth::user();
+
+        if (
+            $submission->type !== 'facilities_utilization' ||
+            $submission->requester_id !== $user->id
+        ) {
+            abort(404);
+        }
+
+        $payload = $submission->payload ?? [];
+        $facilities = collect();
+
+        if (!empty($payload['facility_ids'])) {
+            $facilities = Facility::whereIn('id', $payload['facility_ids'])->get();
+        }
+
+        return view('org.requests.facilities_show', compact('submission', 'payload', 'facilities'));
+    }
 }

@@ -155,6 +155,8 @@ Route::middleware(['auth', 'role:org_staff'])->group(function () {
         ->name('org.requests.facilities.store');
     Route::get('/org/requests/facilities/index', [OrgFormController::class, 'indexFacilities'])
         ->name('org.requests.facilities.index');
+    Route::get('/org/requests/facilities/{submission}', [OrgFormController::class, 'showFacilities'])
+        ->name('org.requests.facilities.show');
 });
 
 // TEMP: create test users for login (remove after you test)
